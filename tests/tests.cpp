@@ -9,6 +9,10 @@ int main(int argc, char **argv)
   return RUN_ALL_TESTS ();
 }
 
+// -----------------------------------------------------------------------------
+// ---------------------------- Vectors dot product ----------------------------
+// -----------------------------------------------------------------------------
+
 TEST (vector_dot_product, int_small)
 {
     Triangles::Vector first {5, 6, 7};
@@ -64,3 +68,79 @@ TEST (vector_dot_product, parallel)
     double answer = Triangles::Vector::DotProduct (first, second);
     EXPECT_DOUBLE_EQ (answer, 9.0);
 }
+
+// -----------------------------------------------------------------------------
+// --------------------------- Vectors cross product ---------------------------
+// -----------------------------------------------------------------------------
+
+TEST (vector_cross_product, int_small)
+{
+    Triangles::Vector first {5, 6, 7};
+    Triangles::Vector second {1, 3, 2};
+    Triangles::Vector answer = Triangles::Vector::CrossProduct (first, second);
+    EXPECT_DOUBLE_EQ (answer.GetX (), -9);
+    EXPECT_DOUBLE_EQ (answer.GetY (), -3);
+    EXPECT_DOUBLE_EQ (answer.GetZ (), 9);
+}
+
+TEST (vector_cross_product, int_big)
+{
+    Triangles::Vector first {435, 345, 71};
+    Triangles::Vector second {1546, 356, 289};
+    Triangles::Vector answer = Triangles::Vector::CrossProduct (first, second);
+    EXPECT_DOUBLE_EQ (answer.GetX (), 74429);
+    EXPECT_DOUBLE_EQ (answer.GetY (), -15949);
+    EXPECT_DOUBLE_EQ (answer.GetZ (), -378510);
+}
+
+TEST (vector_cross_product, int_neg)
+{
+    Triangles::Vector first {-4, -435, 33};
+    Triangles::Vector second {324, 66, -800};
+    Triangles::Vector answer = Triangles::Vector::CrossProduct (first, second);
+    EXPECT_DOUBLE_EQ (answer.GetX (), 345822);
+    EXPECT_DOUBLE_EQ (answer.GetY (), 7492);
+    EXPECT_DOUBLE_EQ (answer.GetZ (), 140676);
+}
+
+TEST (vector_cross_product, small)
+{
+    Triangles::Vector first {5.5, 6.6, 3.0};
+    Triangles::Vector second {-2.0, 3.9, 8};
+    Triangles::Vector answer = Triangles::Vector::CrossProduct (first, second);
+    EXPECT_DOUBLE_EQ (answer.GetX (), 41.1);
+    EXPECT_DOUBLE_EQ (answer.GetY (), -50);
+    EXPECT_DOUBLE_EQ (answer.GetZ (), 34.65);
+}
+
+TEST (vector_cross_product, large)
+{
+    Triangles::Vector first {2e6, -1e6, -3e6};
+    Triangles::Vector second {-4e6, 5e6, 6e6};
+    Triangles::Vector answer = Triangles::Vector::CrossProduct (first, second);
+    EXPECT_DOUBLE_EQ (answer.GetX (), 9000000000000);
+    EXPECT_DOUBLE_EQ (answer.GetY (), 0);
+    EXPECT_DOUBLE_EQ (answer.GetZ (), 6000000000000);
+}
+
+TEST (vector_cross_product, ortho)
+{
+    Triangles::Vector first {1.0, 1.0, 1.0};
+    Triangles::Vector second {-1.0, 1.0, 0.0};
+    Triangles::Vector answer = Triangles::Vector::CrossProduct (first, second);
+    EXPECT_DOUBLE_EQ (answer.GetX (), -1);
+    EXPECT_DOUBLE_EQ (answer.GetY (), -1);
+    EXPECT_DOUBLE_EQ (answer.GetZ (), 2);
+}
+
+TEST (vector_cross_product, parallel)
+{
+    Triangles::Vector first {1.0, 1.0, 1.0};
+    Triangles::Vector second {3.0, 3.0, 3.0};
+    Triangles::Vector answer = Triangles::Vector::CrossProduct (first, second);
+    EXPECT_DOUBLE_EQ (answer.GetX (), 0);
+    EXPECT_DOUBLE_EQ (answer.GetY (), 0);
+    EXPECT_DOUBLE_EQ (answer.GetZ (), 0);
+}
+
+// -----------------------------------------------------------------------------
