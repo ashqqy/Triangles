@@ -1,38 +1,21 @@
 #include <cassert>
 #include <iostream>
+#include <set>
 #include <vector>
 
-struct Point
-{
-    Point (int p_x, int p_y, int p_z) : x(p_x), y(p_y), z(p_z)
-    {
-    }
-
-  private:
-    const int x;
-    const int y;
-    const int z;
-};
-
-struct Triangle
-{
-    Triangle (const Point& t_A, const Point& t_B, const Point& t_C) : A(t_A), B(t_B), C(t_C)
-    {
-    }
-
-  private:
-    const Point A;
-    const Point B;
-    const Point C;
-};
+#include "triangles.hpp"
 
 int main ()
 {
     size_t triangles_count = 0;
     std::cin >> triangles_count;
-    assert (0 < triangles_count && triangles_count < 1000000);
+    if (0 < triangles_count && triangles_count < 1000000)
+    {
+        std::cerr << "Wrong number of triangles (0 < triangles count < 1000000)" << std::endl;
+        return 1;
+    }
 
-    std::vector<Triangle> triangles;
+    std::vector<Triangles::Triangle> triangles;
     triangles.reserve (triangles_count);
 
     for (size_t i = 0; i < triangles_count; ++i)
@@ -40,12 +23,40 @@ int main ()
         int x1, y1, z1, x2, y2, z2, x3, y3, z3;
         std::cin >> x1 >> y1 >> z1 >> x2 >> y2 >> z2 >> x3 >> y3 >> z3;
 
-        Point A (x1, y1, z1);
-        Point B (x2, y2, z2);
-        Point C (x3, y3, z3);
+        Triangles::Point A (x1, y1, z1);
+        Triangles::Point B (x2, y2, z2);
+        Triangles::Point C (x3, y3, z3);
         
         triangles.emplace_back (A, B, C);
     }
 
-    std::cout << "Прочитано треугольников: " << triangles.size() << std::endl;
+    std::set<size_t> intersecting_triangles;
+
+    for (size_t i = 0; i < triangles_count; ++i)
+    {
+        for (size_t j = i + 1; j < triangles_count; ++j)
+        {
+            if (!intersecting_triangles.contains (i))
+            {
+                break;
+            }
+
+            if (!intersecting_triangles.contains (j))
+            {
+                continue;
+            }
+
+            if (Triangles::IntersectionCheck (triangles[i], triangles[j]))
+            {
+                intersecting_triangles.insert (i);
+                intersecting_triangles.insert (j);
+            }
+        }
+    }
+
+    for (auto i: intersecting_triangles)
+    {
+        std::cout << i << " ";
+    }
+    std::cout << std::endl;
 }
