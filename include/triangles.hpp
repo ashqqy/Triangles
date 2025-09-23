@@ -5,7 +5,7 @@ namespace Triangles
 struct Point
 {
   public:
-    Point (float x, float y, float z) : x_(x), y_(y), z_(z) {}
+    Point (double x, double y, double z) : x_(x), y_(y), z_(z) {}
 
     Point operator+ (const Point& point) const
     {
@@ -17,27 +17,28 @@ struct Point
         return Point (x_ - point.x_, y_ - point.y_, z_ - point.z_);
     }
 
-    float GetX () const { return x_; }
-    float GetY () const { return y_; }
-    float GetZ () const { return z_; }
+    double GetX () const { return x_; }
+    double GetY () const { return y_; }
+    double GetZ () const { return z_; }
 
   private:
-    const float x_;
-    const float y_;
-    const float z_;
+    const double x_;
+    const double y_;
+    const double z_;
 };
 
 struct Vector
 {
   public:
+    Vector (double x, double y, double z) : vector_end_point_ (Point (x, y, z)) {}
     Vector (const Point vector_end_point) : vector_end_point_ (vector_end_point) {}
     Vector (const Point& vector_start_point, const Point& vector_end_point) : vector_end_point_ (vector_end_point - vector_start_point) {}
 
-    float GetX () const { return vector_end_point_.GetX (); }
-    float GetY () const { return vector_end_point_.GetY (); }
-    float GetZ () const { return vector_end_point_.GetZ (); }
+    double GetX () const { return vector_end_point_.GetX (); }
+    double GetY () const { return vector_end_point_.GetY (); }
+    double GetZ () const { return vector_end_point_.GetZ (); }
 
-    static float DotProduct    (const Vector& first, const Vector& second);
+    static double DotProduct    (const Vector& first, const Vector& second);
     static Vector CrossProduct (const Vector& first, const Vector& second);
 
   private:
@@ -55,5 +56,5 @@ struct Triangle
     const Point C_;
 };
 
-bool IntersectionCheck (const Triangle& first_triangle, const Triangle& second_triangle);
+// bool IntersectionCheck (const Triangle& first_triangle, const Triangle& second_triangle);
 }

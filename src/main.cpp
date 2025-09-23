@@ -20,7 +20,7 @@ int main ()
 
     for (size_t i = 0; i < triangles_count; ++i)
     {
-        int x1, y1, z1, x2, y2, z2, x3, y3, z3;
+        double x1, y1, z1, x2, y2, z2, x3, y3, z3;
         std::cin >> x1 >> y1 >> z1 >> x2 >> y2 >> z2 >> x3 >> y3 >> z3;
 
         Triangles::Point A (x1, y1, z1);
@@ -46,11 +46,11 @@ int main ()
                 continue;
             }
 
-            if (Triangles::IntersectionCheck (triangles[i], triangles[j]))
-            {
-                intersecting_triangles.insert (i);
-                intersecting_triangles.insert (j);
-            }
+            // if (Triangles::IntersectionCheck (triangles[i], triangles[j]))
+            // {
+            //     intersecting_triangles.insert (i);
+            //     intersecting_triangles.insert (j);
+            // }
         }
     }
 

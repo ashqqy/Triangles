@@ -3,10 +3,11 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 project (Triangles)
-
-add_subdirectory(src)
 add_subdirectory(tests)
-include_directories(${CMAKE_SOURCE_DIR}/include)
-add_executable(${PROJECT_NAME} src/main.cpp)
 
-target_link_libraries(${PROJECT_NAME} triangles_lib)
+set(SOURCE_FILES
+src/main.cpp
+src/triangles.cpp)
+
+include_directories(${CMAKE_SOURCE_DIR}/include)
+add_executable(${PROJECT_NAME} ${SOURCE_FILES})
