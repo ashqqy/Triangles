@@ -2,6 +2,7 @@
 
 namespace Triangles
 {
+
 struct Point
 {
   public:
@@ -38,7 +39,7 @@ struct Vector
     double GetY () const { return vector_end_point_.GetY (); }
     double GetZ () const { return vector_end_point_.GetZ (); }
 
-    static double DotProduct    (const Vector& first, const Vector& second);
+    static double DotProduct   (const Vector& first, const Vector& second);
     static Vector CrossProduct (const Vector& first, const Vector& second);
 
   private:
@@ -48,13 +49,17 @@ struct Vector
 struct Triangle
 {
   public:
-    Triangle (const Point& A, const Point& B, const Point& C) : A_(A), B_(B), C_(C) {}
+    Triangle (const Point& a, const Point& b, const Point& c) : 
+        a_(a), b_(b), c_(c), plane_normal_(Vector::CrossProduct (Vector (a, b), Vector (a, c))) {}
 
   private:
-    const Point A_;
-    const Point B_;
-    const Point C_;
+    const Point a_;
+    const Point b_;
+    const Point c_;
+
+    const Vector plane_normal_;
 };
 
 // bool IntersectionCheck (const Triangle& first_triangle, const Triangle& second_triangle);
-}
+
+} // namespace Triangles
