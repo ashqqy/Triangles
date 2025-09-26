@@ -1,4 +1,3 @@
-#include <cassert>
 #include <iostream>
 #include <set>
 #include <vector>
@@ -46,7 +45,7 @@ int main ()
                 continue;
             }
 
-            // if (Triangles::IntersectionCheck (triangles[i], triangles[j]))
+            // if (Triangles::CheckTrianglesIntersection (triangles[i], triangles[j]))
             // {
             //     intersecting_triangles.insert (i);
             //     intersecting_triangles.insert (j);
