@@ -144,6 +144,58 @@ TEST (vector_cross_product, parallel)
 }
 
 // -----------------------------------------------------------------------------
+// -------------------------- Triangle.ContainsPoint ---------------------------
+// -----------------------------------------------------------------------------
+
+TEST (triangle_contains_point, contains_easy)
+{
+    Triangles::Triangle triangle(Triangles::Point (1, 0, 1), Triangles::Point(0, 0, 1), Triangles::Point(0, 1, 1));
+    Triangles::Point point(0.25, 0.25, 1);
+
+    GTEST_EXPECT_TRUE (triangle.ContainsPoint(point));
+}
+
+TEST (triangle_contains_point, not_contains_easy)
+{
+    Triangles::Triangle triangle(Triangles::Point (1, 0, 1), Triangles::Point(0, 0, 1), Triangles::Point(0, 1, 1));
+    Triangles::Point point(1, 1, 1);
+
+    GTEST_EXPECT_FALSE (triangle.ContainsPoint(point));
+}
+
+TEST (triangle_contains_point, lies_on_vertice)
+{
+    Triangles::Triangle triangle(Triangles::Point (1, 0, 1), Triangles::Point(0, 0, 1), Triangles::Point(0, 1, 1));
+    Triangles::Point point(1, 0, 1);
+
+    GTEST_EXPECT_TRUE (triangle.ContainsPoint(point));
+}
+
+TEST (triangle_contains_point, lies_on_edge)
+{
+    Triangles::Triangle triangle(Triangles::Point (1, 0, 1), Triangles::Point(0, 0, 1), Triangles::Point(0, 1, 1));
+    Triangles::Point point(0.5, 0.5, 1);
+
+    GTEST_EXPECT_TRUE (triangle.ContainsPoint(point));
+}
+
+TEST (triangle_contains_point, contains_hard)
+{
+    Triangles::Triangle triangle(Triangles::Point (4.56, -8.97, 1), Triangles::Point(4.5, -5, -3.3), Triangles::Point(3.38, -4.96, 5.7));
+    Triangles::Point point(3.993390801589, -6.000985985925, 1.999181904135);
+
+    GTEST_EXPECT_TRUE (triangle.ContainsPoint(point));
+}
+
+TEST (triangle_contains_point, not_contains_hard)
+{
+    Triangles::Triangle triangle(Triangles::Point (4.56, -8.97, 1), Triangles::Point(4.5, -5, -3.3), Triangles::Point(3.38, -4.96, 5.7));
+    Triangles::Point point(0.72, -9.53, -2.23);
+
+    GTEST_EXPECT_FALSE (triangle.ContainsPoint(point));
+}
+
+// -----------------------------------------------------------------------------
 // --------------------------- Whole algorithm tests ---------------------------
 // -----------------------------------------------------------------------------
 
@@ -159,6 +211,23 @@ TEST (triangles_intersection, intersect)
 {
     Triangles::Triangle first  {Triangles::Point (1, 5, 0), Triangles::Point(-1, 3, -0.3), Triangles::Point(0.8, 1, 0)};
     Triangles::Triangle second {Triangles::Point (1.3, 2.3, 0), Triangles::Point(-2, 5, 0), Triangles::Point(-0.8, 6, 0)};
+    bool answer = Triangles::CheckTrianglesIntersection (first, second);
+    GTEST_EXPECT_TRUE (answer);
+}
+
+TEST (triangles_intersection, same_edge_coplanar)
+{
+    Triangles::Triangle first  {Triangles::Point (0, 0, 0), Triangles::Point(0, 1, 0), Triangles::Point(1, 0, 0)};
+    Triangles::Triangle second {Triangles::Point (0, 1, 0), Triangles::Point(1, 0, 0), Triangles::Point(1, 1, 0)};
+    bool answer = Triangles::CheckTrianglesIntersection (first, second);
+    GTEST_EXPECT_TRUE (answer);
+}
+
+
+TEST (triangles_intersection, same_edge)
+{
+    Triangles::Triangle first  {Triangles::Point (0, 0, 0), Triangles::Point(0, 1, 0), Triangles::Point(1, 0, 0)};
+    Triangles::Triangle second {Triangles::Point (0, 1, 0), Triangles::Point(1, 0, 0), Triangles::Point(1, 1, 1)};
     bool answer = Triangles::CheckTrianglesIntersection (first, second);
     GTEST_EXPECT_TRUE (answer);
 }
