@@ -4,9 +4,9 @@
 
 int main(int argc, char **argv)
 {
-  testing::InitGoogleTest (&argc, argv);
+    testing::InitGoogleTest (&argc, argv);
 
-  return RUN_ALL_TESTS ();
+    return RUN_ALL_TESTS ();
 }
 
 // -----------------------------------------------------------------------------
@@ -144,3 +144,21 @@ TEST (vector_cross_product, parallel)
 }
 
 // -----------------------------------------------------------------------------
+// --------------------------- Whole algorithm tests ---------------------------
+// -----------------------------------------------------------------------------
+
+TEST (triangles_intersection, not_intersect)
+{
+    Triangles::Triangle first  {Triangles::Point (1, 5, 1), Triangles::Point(-1, 3, 0), Triangles::Point(0.8, 1, 0)};
+    Triangles::Triangle second {Triangles::Point (1.3, 2.3, 0), Triangles::Point(-2, 5, 0), Triangles::Point(-0.8, 6, 0)};
+    bool answer = Triangles::CheckTrianglesIntersection (first, second);
+    GTEST_EXPECT_FALSE (answer);
+}
+
+TEST (triangles_intersection, intersect)
+{
+    Triangles::Triangle first  {Triangles::Point (1, 5, 0), Triangles::Point(-1, 3, -0.3), Triangles::Point(0.8, 1, 0)};
+    Triangles::Triangle second {Triangles::Point (1.3, 2.3, 0), Triangles::Point(-2, 5, 0), Triangles::Point(-0.8, 6, 0)};
+    bool answer = Triangles::CheckTrianglesIntersection (first, second);
+    GTEST_EXPECT_TRUE (answer);
+}

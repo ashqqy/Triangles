@@ -8,7 +8,7 @@ int main ()
 {
     size_t triangles_count = 0;
     std::cin >> triangles_count;
-    if (0 < triangles_count && triangles_count < 1000000)
+    if (!(0 < triangles_count && triangles_count < 1000000))
     {
         std::cerr << "Wrong number of triangles (0 < triangles count < 1000000)" << std::endl;
         return 1;
@@ -35,21 +35,11 @@ int main ()
     {
         for (size_t j = i + 1; j < triangles_count; ++j)
         {
-            if (!intersecting_triangles.contains (i))
+            if (Triangles::CheckTrianglesIntersection (triangles[i], triangles[j]))
             {
-                break;
+                intersecting_triangles.insert (i);
+                intersecting_triangles.insert (j);
             }
-
-            if (!intersecting_triangles.contains (j))
-            {
-                continue;
-            }
-
-            // if (Triangles::CheckTrianglesIntersection (triangles[i], triangles[j]))
-            // {
-            //     intersecting_triangles.insert (i);
-            //     intersecting_triangles.insert (j);
-            // }
         }
     }
 

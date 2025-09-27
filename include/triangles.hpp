@@ -32,7 +32,7 @@ struct Vector
 {
   public:
     Vector(double x, double y, double z) : vector_end_point_ (Point (x, y, z)) {}
-    Vector(const Point vector_end_point) : vector_end_point_ (vector_end_point) {}
+    Vector(const Point& vector_end_point) : vector_end_point_ (vector_end_point) {}
     Vector(const Point& vector_start_point, const Point& vector_end_point) : vector_end_point_ (vector_end_point - vector_start_point) {}
 
     double GetX() const { return vector_end_point_.GetX (); }
@@ -86,11 +86,31 @@ struct Line
   public:
     Line (const Vector& direction, const Vector& offset) :
         direction_ (direction), offset_ (offset) {} 
+    
+    Line (const Vector& direction) :
+        direction_ (direction), offset_ (Vector (0, 0, 0)) {} 
+
+    Vector GetDirection() const { return direction_; }
+    Vector GetOffset()    const { return offset_; }
 
   private:
     // L = offset_ + t * direction_;
     const Vector direction_;
     const Vector offset_;
+};
+
+struct LineSegment
+{
+  public:
+    LineSegment (double begin, double end) :
+        begin_ (begin), end_ (end) {} 
+    
+    double GetBegin() const { return begin_; }
+    double GetEnd()   const { return end_; }
+
+  private:
+    const double begin_;
+    const double end_;
 };
 
 enum class TrianglePlaneIntersection
@@ -101,7 +121,5 @@ enum class TrianglePlaneIntersection
 };
 
 bool CheckTrianglesIntersection(const Triangle& first_triangle, const Triangle& second_triangle);
-TrianglePlaneIntersection CheckPlaneTriangleIntersection(const Plane& plane, const Triangle& triangle);
-bool CheckCoplanarTrianglesIntersection (const Triangle& first_triangle, const Triangle& second_triangle);
 
 } // namespace Triangles
