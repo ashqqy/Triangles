@@ -1,75 +1,14 @@
-#include <cassert>
 #include <algorithm>
+#include <cassert>
 #include <utility>
+#include <iostream>
 
 #include "triangles.hpp"
 
 namespace Triangles
 {
 
-double Vector::DotProduct(const Vector& first, const Vector& second)
-{
-    return first.GetX() * second.GetX() + first.GetY() * second.GetY() + first.GetZ() * second.GetZ();
-}
-
-Vector Vector::CrossProduct(const Vector& first, const Vector& second)
-{
-    double c_x = first.GetY() * second.GetZ() - first.GetZ() * second.GetY();
-    double c_y = first.GetZ() * second.GetX() - first.GetX() * second.GetZ();
-    double c_z = first.GetX() * second.GetY() - first.GetY() * second.GetX();
-
-    return Vector(c_x, c_y, c_z);
-}
-
-// ---------------------------------------------------------------------------------------------------
-
-struct TrianglePlaneDistances
-{
-    TrianglePlaneDistances() {}
-
-    TrianglePlaneDistances(const double& a, const double& b, const double& c) 
-        : d_a(a), d_b(b), d_c(c) {}
-
-    double d_a;
-    double d_b;
-    double d_c;
-};
-
-static double FindDistanceFromPointToPlane(const Point& point, const Plane& plane)
-{
-    return Vector::DotProduct (plane.GetNormal(), Vector (point)) + plane.GetOffset();
-}
-
-static TrianglePlaneDistances FindDistanceFromTriangleVerticesToPlane(const Triangle& triangle, const Plane& plane)
-{
-    const double d_a = FindDistanceFromPointToPlane(triangle.GetA(), plane);
-    const double d_b = FindDistanceFromPointToPlane(triangle.GetB(), plane);
-    const double d_c = FindDistanceFromPointToPlane(triangle.GetC(), plane);
-
-    TrianglePlaneDistances distances (d_a, d_b, d_c);
-
-    return distances;
-}
-
-// ---------------------------------------------------------------------------------------------------
-
-enum class TrianglePlaneIntersection
-{
-    COPLANAR,
-    NO_INTERSECTION,
-    INTERSECTING
-};
-
-static TrianglePlaneIntersection CheckPlaneTriangleIntersection(const TrianglePlaneDistances& distances);
-static bool CheckCoplanarTrianglesIntersection(const Triangle& first_triangle, const Triangle& second_triangle);
-static LineSegment<double> FindTriangleLineIntersectionSegment(const Triangle& triangle, const Line& line, const TrianglePlaneDistances& distances);
-
-static bool CheckSegmentsIntersection(const LineSegment<double>& segment1, const LineSegment<double>& segment2);
-static bool CheckSegmentsIntersection(const LineSegment<Point>& segment1, const LineSegment<Point>& segment2);
-static bool CheckParallelSegmentsIntersection(const LineSegment<Point>& segment1, const LineSegment<Point>& segment2);
-static bool CheckTriangleSegmentIntersection(const Triangle& triangle, const LineSegment<Point>& segment);
-
-// ---------------------------------------------------------------------------------------------------
+// ------------------------------------- Main algorithm function -------------------------------------
 
 // returns true if triangles intersect, false otherwise
 bool CheckTrianglesIntersection(const Triangle& first_triangle, const Triangle& second_triangle)
@@ -96,6 +35,22 @@ bool CheckTrianglesIntersection(const Triangle& first_triangle, const Triangle& 
         return CheckCoplanarTrianglesIntersection(first_triangle, second_triangle);
     }
 
+    // Vertice of first triangle lies inside second
+    if (first_triangle.ContainsPoint(second_triangle.GetA()) || 
+        first_triangle.ContainsPoint(second_triangle.GetB()) ||
+        first_triangle.ContainsPoint(second_triangle.GetC()))
+    {
+        return true;
+    }
+
+    // Vertice of second triangle lies inside first
+    if (second_triangle.ContainsPoint(first_triangle.GetA()) || 
+        second_triangle.ContainsPoint(first_triangle.GetB()) ||
+        second_triangle.ContainsPoint(first_triangle.GetC()))
+    {
+        return true;
+    }
+
     // Common case
 
     // optimization: don't compute offset point
@@ -108,21 +63,24 @@ bool CheckTrianglesIntersection(const Triangle& first_triangle, const Triangle& 
     return CheckSegmentsIntersection (first_intersection, second_intersection);
 }
 
-// ---------------------------------------------------------------------------------------------------
+// ------------------------------------- Main support functions --------------------------------------
 
-static TrianglePlaneIntersection CheckPlaneTriangleIntersection(const TrianglePlaneDistances& distances)
+TrianglePlaneIntersection CheckPlaneTriangleIntersection(const TrianglePlaneDistances& distances)
 {
-    const bool coplanar = (distances.d_a == 0) && (distances.d_b == 0) && (distances.d_c == 0);
+    const bool coplanar = DoubleEqual(distances.d_a, 0) && DoubleEqual(distances.d_b, 0) && DoubleEqual(distances.d_c, 0);
     if (coplanar) { return TrianglePlaneIntersection::COPLANAR; }
 
-    const bool same_side = ((distances.d_a > 0) == (distances.d_b > 0)) && 
-                           ((distances.d_b > 0) == (distances.d_c > 0));
-    if (same_side) { return TrianglePlaneIntersection::NO_INTERSECTION; }
+    bool same_side = (DoubleGreater(distances.d_a, 0) && DoubleGreater(distances.d_b, 0) && DoubleGreater(distances.d_b, 0)) ||
+                     (DoubleLess(distances.d_a, 0)    && DoubleLess(distances.d_b, 0)    && DoubleLess(distances.d_c, 0));
+    if (same_side) 
+    {
+        return TrianglePlaneIntersection::NO_INTERSECTION; 
+    }
 
     return TrianglePlaneIntersection::INTERSECTING;
 }
 
-static bool CheckCoplanarTrianglesIntersection(const Triangle& first_triangle, const Triangle& second_triangle)
+bool CheckCoplanarTrianglesIntersection(const Triangle& first_triangle, const Triangle& second_triangle)
 {
     const LineSegment first_edge_ab (first_triangle.GetA(), first_triangle.GetB());
     const LineSegment first_edge_bc (first_triangle.GetB(), first_triangle.GetC());
@@ -161,7 +119,7 @@ static bool CheckCoplanarTrianglesIntersection(const Triangle& first_triangle, c
     return false;
 }
 
-static LineSegment<double> FindTriangleLineIntersectionSegment(const Triangle& triangle, const Line& line, const TrianglePlaneDistances& distances)
+LineSegment<double> FindTriangleLineIntersectionSegment(const Triangle& triangle, const Line& line, const TrianglePlaneDistances& distances)
 {
     // Project vertices to the line: projection = Dot (Direction, (Vertice - Line_offset))
     // optimization: don't use line offset point
@@ -174,6 +132,8 @@ static LineSegment<double> FindTriangleLineIntersectionSegment(const Triangle& t
     double mid_point_projection = 0;
 
     TrianglePlaneDistances new_distances;
+
+    // TODO: points lies on the edge 
     
     // Two points are on one side of the line, the remaining point is on the other side.
     // To determine this, we use the distances from the vertices of the triangle to the plane of the second triangle
@@ -214,17 +174,17 @@ static LineSegment<double> FindTriangleLineIntersectionSegment(const Triangle& t
     return LineSegment (std::min(intersection_begin, intersection_end), std::max(intersection_begin, intersection_end));
 }
 
-// ---------------------------------------------------------------------------------------------------
+// ------------------------------------- Line segment functions --------------------------------------
 
 // 1D segments
-static bool CheckSegmentsIntersection(const LineSegment<double>& segment1, const LineSegment<double>& segment2)
+bool CheckSegmentsIntersection(const LineSegment<double>& segment1, const LineSegment<double>& segment2)
 {
     return DoubleLessOrEqual(segment1.GetBegin(), segment2.GetEnd()) &&
            DoubleLessOrEqual(segment2.GetBegin(), segment1.GetEnd());
 }
 
 // 3D segments
-static bool CheckSegmentsIntersection(const LineSegment<Point>& segment1, const LineSegment<Point>& segment2)
+bool CheckSegmentsIntersection(const LineSegment<Point>& segment1, const LineSegment<Point>& segment2)
 {
     Vector vec1(segment1);
     Vector vec2(segment2);
@@ -267,7 +227,7 @@ static bool CheckSegmentsIntersection(const LineSegment<Point>& segment1, const 
             DoubleLessOrEqual(0, t2) && DoubleLessOrEqual(t2, 1));
 }
 
-static bool CheckParallelSegmentsIntersection(const LineSegment<Point>& segment1, const LineSegment<Point>& segment2)
+bool CheckParallelSegmentsIntersection(const LineSegment<Point>& segment1, const LineSegment<Point>& segment2)
 {
     Vector vec1(segment1);
     Vector vec_between_starts(segment1.GetBegin(), segment2.GetBegin());
@@ -293,7 +253,7 @@ static bool CheckParallelSegmentsIntersection(const LineSegment<Point>& segment1
            CheckSegmentsIntersection(proj_z1, proj_z2);
 }
 
-static bool CheckTriangleSegmentIntersection(const Triangle& triangle, const LineSegment<Point>& segment)
+bool CheckTriangleSegmentIntersection(const Triangle& triangle, const LineSegment<Point>& segment)
 {
     LineSegment ab = LineSegment(triangle.GetA(), triangle.GetB());
     LineSegment bc = LineSegment(triangle.GetB(), triangle.GetC());
@@ -304,6 +264,24 @@ static bool CheckTriangleSegmentIntersection(const Triangle& triangle, const Lin
     if (CheckSegmentsIntersection (ca, segment)) return true;
 
     return false;
+}
+
+// ----------------------------------- Distance to plane functions -----------------------------------
+
+double FindDistanceFromPointToPlane(const Point& point, const Plane& plane)
+{
+    return Vector::DotProduct(plane.GetNormal(), Vector (point)) + plane.GetOffset();
+}
+
+TrianglePlaneDistances FindDistanceFromTriangleVerticesToPlane(const Triangle& triangle, const Plane& plane)
+{
+    const double d_a = FindDistanceFromPointToPlane(triangle.GetA(), plane);
+    const double d_b = FindDistanceFromPointToPlane(triangle.GetB(), plane);
+    const double d_c = FindDistanceFromPointToPlane(triangle.GetC(), plane);
+
+    TrianglePlaneDistances distances (d_a, d_b, d_c);
+
+    return distances;
 }
 
 } // namespace Triangles

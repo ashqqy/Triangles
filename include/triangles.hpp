@@ -6,15 +6,34 @@
 namespace Triangles
 {
 
-inline bool DoubleLessOrEqual(double left, double right, double epsilon = 1e-10)
+// ---------------------------------------- Double comparsion ----------------------------------------
+
+inline bool DoubleLessOrEqual(double left, double right, double epsilon = 1e-7)
 {
-    return left < right || std::abs(left - right) < epsilon;
+    return left - right < epsilon;
 }
 
-inline bool DoubleEqual(double a, double b, double epsilon = 1e-10)
+inline bool DoubleLess(double left, double right, double epsilon = 1e-7)
+{
+    return left - right < -epsilon;
+}
+
+inline bool DoubleGreaterOrEqual(double left, double right, double epsilon = 1e-7)
+{
+    return left - right > -epsilon;
+}
+
+inline bool DoubleGreater(double left, double right, double epsilon = 1e-7)
+{
+    return left - right > epsilon;
+}
+
+inline bool DoubleEqual(double a, double b, double epsilon = 1e-7)
 {
     return std::abs(a - b) < epsilon;
 }
+
+// ---------------------------------------------- Point ----------------------------------------------
 
 struct Point
 {
@@ -43,6 +62,8 @@ struct Point
     const double z_;
 };
 
+// ------------------------------------------ Line segment -------------------------------------------
+
 template<typename T>
 struct LineSegment
 {
@@ -61,6 +82,8 @@ struct LineSegment
     const T end_;
 };
 
+// --------------------------------------------- Vector ----------------------------------------------
+
 struct Vector
 {
   public:
@@ -75,12 +98,25 @@ struct Vector
 
     bool IsZero() const { return vector_end_point_.IsZero(); }
 
-    static double DotProduct   (const Vector& first, const Vector& second);
-    static Vector CrossProduct (const Vector& first, const Vector& second);
+    static double DotProduct   (const Vector& first, const Vector& second)
+    {
+        return first.GetX() * second.GetX() + first.GetY() * second.GetY() + first.GetZ() * second.GetZ();
+    }
+
+    static Vector CrossProduct (const Vector& first, const Vector& second)
+    {
+        double c_x = first.GetY() * second.GetZ() - first.GetZ() * second.GetY();
+        double c_y = first.GetZ() * second.GetX() - first.GetX() * second.GetZ();
+        double c_z = first.GetX() * second.GetY() - first.GetY() * second.GetX();
+
+        return Vector(c_x, c_y, c_z);
+    }
 
   private:
     const Point vector_end_point_;
 };
+
+// -------------------------------------------- Triangle ---------------------------------------------
 
 struct Triangle
 {
@@ -133,6 +169,8 @@ struct Triangle
     const Point c_;
 };
 
+// ---------------------------------------------- Plane ----------------------------------------------
+
 struct Plane
 {
   public:
@@ -153,6 +191,8 @@ struct Plane
     double offset_;
 };
 
+// ----------------------------------------------- Line ----------------------------------------------
+
 struct Line
 {
   public:
@@ -171,6 +211,50 @@ struct Line
     const Vector offset_;
 };
 
+// ---------------------------------------------------------------------------------------------------
+// -------------------------------------- Function declarations --------------------------------------
+// ---------------------------------------------------------------------------------------------------
+
+// ------------------------------------- Main algorithm function -------------------------------------
+
 bool CheckTrianglesIntersection(const Triangle& first_triangle, const Triangle& second_triangle);
+
+// ------------------------------------- Main support functions --------------------------------------
+
+enum class TrianglePlaneIntersection
+{
+    COPLANAR,
+    NO_INTERSECTION,
+    INTERSECTING
+};
+
+struct TrianglePlaneDistances
+{
+    TrianglePlaneDistances() = default;
+
+    TrianglePlaneDistances(const double& a, const double& b, const double& c) 
+        : d_a(a), d_b(b), d_c(c) {}
+
+    double d_a;
+    double d_b;
+    double d_c;
+};
+
+TrianglePlaneIntersection CheckPlaneTriangleIntersection(const TrianglePlaneDistances& distances);
+bool CheckCoplanarTrianglesIntersection(const Triangle& first_triangle, const Triangle& second_triangle);
+LineSegment<double> FindTriangleLineIntersectionSegment(const Triangle& triangle, const Line& line, const TrianglePlaneDistances& distances);
+
+// ------------------------------------- Line segment functions --------------------------------------
+
+bool CheckSegmentsIntersection        (const LineSegment<double>& segment1, const LineSegment<double>& segment2);
+bool CheckSegmentsIntersection        (const LineSegment<Point>& segment1,  const LineSegment<Point>& segment2);
+bool CheckParallelSegmentsIntersection(const LineSegment<Point>& segment1,  const LineSegment<Point>& segment2);
+
+bool CheckTriangleSegmentIntersection (const Triangle& triangle, const LineSegment<Point>& segment);
+
+// ----------------------------------- Distance to plane functions -----------------------------------
+
+double FindDistanceFromPointToPlane(const Point& point, const Plane& plane);
+TrianglePlaneDistances FindDistanceFromTriangleVerticesToPlane(const Triangle& triangle, const Plane& plane);
 
 } // namespace Triangles

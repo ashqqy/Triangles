@@ -210,7 +210,7 @@ TEST (triangles_intersection, not_intersect)
 TEST (triangles_intersection, intersect)
 {
     Triangles::Triangle first  {Triangles::Point (1, 5, 0), Triangles::Point(-1, 3, -0.3), Triangles::Point(0.8, 1, 0)};
-    Triangles::Triangle second {Triangles::Point (1.3, 2.3, 0), Triangles::Point(-2, 5, 0), Triangles::Point(-0.8, 6, 0)};
+    Triangles::Triangle second {Triangles::Point (1.3, 2.3, -0.5), Triangles::Point(-2, 5, 1.25), Triangles::Point(-0.8, 6, 0)};
     bool answer = Triangles::CheckTrianglesIntersection (first, second);
     GTEST_EXPECT_TRUE (answer);
 }
