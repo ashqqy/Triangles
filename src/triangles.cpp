@@ -23,19 +23,6 @@ Vector Vector::CrossProduct(const Vector& first, const Vector& second)
 
 // ---------------------------------------------------------------------------------------------------
 
-static bool DoubleLessOrEqual(double left, double right, double epsilon = 1e-10)
-{
-    return left < right || std::abs(left - right) < epsilon;
-}
-
-
-static bool DoubleEqual(double a, double b, double epsilon = 1e-10)
-{
-    return std::abs(a - b) < epsilon;
-}
-
-// ---------------------------------------------------------------------------------------------------
-
 struct TrianglePlaneDistances
 {
     TrianglePlaneDistances() {}
@@ -66,13 +53,21 @@ static TrianglePlaneDistances FindDistanceFromTriangleVerticesToPlane(const Tria
 
 // ---------------------------------------------------------------------------------------------------
 
+enum class TrianglePlaneIntersection
+{
+    COPLANAR,
+    NO_INTERSECTION,
+    INTERSECTING
+};
+
 static TrianglePlaneIntersection CheckPlaneTriangleIntersection(const TrianglePlaneDistances& distances);
 static bool CheckCoplanarTrianglesIntersection(const Triangle& first_triangle, const Triangle& second_triangle);
 static LineSegment<double> FindTriangleLineIntersectionSegment(const Triangle& triangle, const Line& line, const TrianglePlaneDistances& distances);
 
-static bool IsSegmentsIntersect(const LineSegment<double>& segment1, const LineSegment<double>& segment2);
-static bool IsSegmentsIntersect(const LineSegment<Point>& segment1, const LineSegment<Point>& segment2);
-static bool IsParallelSegmentsIntersect(const LineSegment<Point>& segment1, const LineSegment<Point>& segment2);
+static bool CheckSegmentsIntersection(const LineSegment<double>& segment1, const LineSegment<double>& segment2);
+static bool CheckSegmentsIntersection(const LineSegment<Point>& segment1, const LineSegment<Point>& segment2);
+static bool CheckParallelSegmentsIntersection(const LineSegment<Point>& segment1, const LineSegment<Point>& segment2);
+static bool CheckTriangleSegmentIntersection(const Triangle& triangle, const LineSegment<Point>& segment);
 
 // ---------------------------------------------------------------------------------------------------
 
@@ -110,7 +105,7 @@ bool CheckTrianglesIntersection(const Triangle& first_triangle, const Triangle& 
     LineSegment<double> second_intersection = FindTriangleLineIntersectionSegment(second_triangle, planes_intersection_line, second_triangle_distances);
 
     // if segments intersect, return true, otherwise return false
-    return IsSegmentsIntersect (first_intersection, second_intersection);
+    return CheckSegmentsIntersection (first_intersection, second_intersection);
 }
 
 // ---------------------------------------------------------------------------------------------------
@@ -129,7 +124,40 @@ static TrianglePlaneIntersection CheckPlaneTriangleIntersection(const TrianglePl
 
 static bool CheckCoplanarTrianglesIntersection(const Triangle& first_triangle, const Triangle& second_triangle)
 {
-    // ...
+    const LineSegment first_edge_ab (first_triangle.GetA(), first_triangle.GetB());
+    const LineSegment first_edge_bc (first_triangle.GetB(), first_triangle.GetC());
+    const LineSegment first_edge_ca (first_triangle.GetC(), first_triangle.GetA());
+
+    const bool is_first_triangle_edges_intersect_second_triangle = 
+        CheckTriangleSegmentIntersection (second_triangle, first_edge_ab) &&
+        CheckTriangleSegmentIntersection (second_triangle, first_edge_bc) &&
+        CheckTriangleSegmentIntersection (second_triangle, first_edge_ca);
+
+    if (is_first_triangle_edges_intersect_second_triangle)
+    {
+        return true;
+    }
+
+    const bool is_first_triangle_contains_in_second_triangle = 
+        second_triangle.ContainsPoint(first_triangle.GetA());
+        second_triangle.ContainsPoint(first_triangle.GetB());
+        second_triangle.ContainsPoint(first_triangle.GetC());
+
+    if (is_first_triangle_contains_in_second_triangle)
+    {
+        return true;
+    }
+
+    const bool is_second_triangle_contains_in_first_triangle = 
+        first_triangle.ContainsPoint(second_triangle.GetA());
+        first_triangle.ContainsPoint(second_triangle.GetB());
+        first_triangle.ContainsPoint(second_triangle.GetC());
+
+    if (is_second_triangle_contains_in_first_triangle)
+    {
+        return true;
+    }
+
     return false;
 }
 
@@ -137,9 +165,9 @@ static LineSegment<double> FindTriangleLineIntersectionSegment(const Triangle& t
 {
     // Project vertices to the line: projection = Dot (Direction, (Vertice - Line_offset))
     // optimization: don't use line offset point
-    double a_projection = Vector::DotProduct (line.GetDirection(), Vector(triangle.GetA()));
-    double b_projection = Vector::DotProduct (line.GetDirection(), Vector(triangle.GetB()));
-    double c_projection = Vector::DotProduct (line.GetDirection(), Vector(triangle.GetC()));
+    const double a_projection = Vector::DotProduct (line.GetDirection(), Vector(triangle.GetA()));
+    const double b_projection = Vector::DotProduct (line.GetDirection(), Vector(triangle.GetB()));
+    const double c_projection = Vector::DotProduct (line.GetDirection(), Vector(triangle.GetC()));
 
     double first_point_projection = 0;
     double second_point_projection = 0;
@@ -189,14 +217,14 @@ static LineSegment<double> FindTriangleLineIntersectionSegment(const Triangle& t
 // ---------------------------------------------------------------------------------------------------
 
 // 1D segments
-static bool IsSegmentsIntersect(const LineSegment<double>& segment1, const LineSegment<double>& segment2)
+static bool CheckSegmentsIntersection(const LineSegment<double>& segment1, const LineSegment<double>& segment2)
 {
     return DoubleLessOrEqual(segment1.GetBegin(), segment2.GetEnd()) &&
            DoubleLessOrEqual(segment2.GetBegin(), segment1.GetEnd());
 }
 
 // 3D segments
-static bool IsSegmentsIntersect(const LineSegment<Point>& segment1, const LineSegment<Point>& segment2)
+static bool CheckSegmentsIntersection(const LineSegment<Point>& segment1, const LineSegment<Point>& segment2)
 {
     Vector vec1(segment1);
     Vector vec2(segment2);
@@ -206,13 +234,13 @@ static bool IsSegmentsIntersect(const LineSegment<Point>& segment1, const LineSe
     // Check if segments are parallel
     if (segments_cross.IsZero())
     {
-        return IsParallelSegmentsIntersect(segment1, segment2);
+        return CheckParallelSegmentsIntersection(segment1, segment2);
     }
 
     Vector vec_between_starts(segment1.GetBegin(), segment2.GetBegin());
     
     // Find the volume of the parallelepiped formed by these segments
-    // volume = scalar triple product = (vec_between_starts, [vec1, vec2]) = (vec_between_starts, segments_cross)
+    // volume = scalar triple product = dot (vec_between_starts, cross (vec1, vec2)) = dot (vec_between_starts, segments_cross)
     double volume = Vector::DotProduct (vec_between_starts, segments_cross);
 
     // if (volume != 0) => segments are skew => segments don't intersect
@@ -230,16 +258,16 @@ static bool IsSegmentsIntersect(const LineSegment<Point>& segment1, const LineSe
     Vector cross2 = Vector::CrossProduct(vec_between_starts, vec2);
 
     double t1 = Vector::DotProduct(cross2, segments_cross) / 
-               Vector::DotProduct(segments_cross, segments_cross);
+                Vector::DotProduct(segments_cross, segments_cross);
 
     double t2 = Vector::DotProduct(cross1, segments_cross) / 
-               Vector::DotProduct(segments_cross, segments_cross);
+                Vector::DotProduct(segments_cross, segments_cross);
 
     return (DoubleLessOrEqual(0, t1) && DoubleLessOrEqual(t1, 1) && 
             DoubleLessOrEqual(0, t2) && DoubleLessOrEqual(t2, 1));
 }
 
-static bool IsParallelSegmentsIntersect(const LineSegment<Point>& segment1, const LineSegment<Point>& segment2)
+static bool CheckParallelSegmentsIntersection(const LineSegment<Point>& segment1, const LineSegment<Point>& segment2)
 {
     Vector vec1(segment1);
     Vector vec_between_starts(segment1.GetBegin(), segment2.GetBegin());
@@ -251,18 +279,31 @@ static bool IsParallelSegmentsIntersect(const LineSegment<Point>& segment1, cons
     }
 
     // Make a projection on each axis and check 1D case
-    LineSegment<double> proj_x1(segment1.GetBegin().GetX(), segment1.GetEnd().GetX());
-    LineSegment<double> proj_x2(segment2.GetBegin().GetX(), segment2.GetEnd().GetX());
+    LineSegment proj_x1(segment1.GetBegin().GetX(), segment1.GetEnd().GetX());
+    LineSegment proj_x2(segment2.GetBegin().GetX(), segment2.GetEnd().GetX());
     
-    LineSegment<double> proj_y1(segment1.GetBegin().GetY(), segment1.GetEnd().GetY());
-    LineSegment<double> proj_y2(segment2.GetBegin().GetY(), segment2.GetEnd().GetY());
+    LineSegment proj_y1(segment1.GetBegin().GetY(), segment1.GetEnd().GetY());
+    LineSegment proj_y2(segment2.GetBegin().GetY(), segment2.GetEnd().GetY());
     
-    LineSegment<double> proj_z1(segment1.GetBegin().GetZ(), segment1.GetEnd().GetZ());
-    LineSegment<double> proj_z2(segment2.GetBegin().GetZ(), segment2.GetEnd().GetZ());
+    LineSegment proj_z1(segment1.GetBegin().GetZ(), segment1.GetEnd().GetZ());
+    LineSegment proj_z2(segment2.GetBegin().GetZ(), segment2.GetEnd().GetZ());
     
-    return IsSegmentsIntersect(proj_x1, proj_x2) &&
-            IsSegmentsIntersect(proj_y1, proj_y2) &&
-            IsSegmentsIntersect(proj_z1, proj_z2);
+    return CheckSegmentsIntersection(proj_x1, proj_x2) &&
+           CheckSegmentsIntersection(proj_y1, proj_y2) &&
+           CheckSegmentsIntersection(proj_z1, proj_z2);
+}
+
+static bool CheckTriangleSegmentIntersection(const Triangle& triangle, const LineSegment<Point>& segment)
+{
+    LineSegment ab = LineSegment(triangle.GetA(), triangle.GetB());
+    LineSegment bc = LineSegment(triangle.GetB(), triangle.GetC());
+    LineSegment ca = LineSegment(triangle.GetC(), triangle.GetA());
+
+    if (CheckSegmentsIntersection (ab, segment)) return true;
+    if (CheckSegmentsIntersection (bc, segment)) return true;
+    if (CheckSegmentsIntersection (ca, segment)) return true;
+
+    return false;
 }
 
 } // namespace Triangles
