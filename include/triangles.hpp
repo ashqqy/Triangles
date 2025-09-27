@@ -22,6 +22,8 @@ struct Point
     double GetY() const { return y_; }
     double GetZ() const { return z_; }
 
+    bool IsZero() const { return DoubleEqual(x_, 0) && DoubleEqual(y_, 0) && DoubleEqual(z_, 0); }
+
   private:
     const double x_;
     const double y_;
@@ -34,10 +36,13 @@ struct Vector
     Vector(double x, double y, double z) : vector_end_point_ (Point (x, y, z)) {}
     Vector(const Point& vector_end_point) : vector_end_point_ (vector_end_point) {}
     Vector(const Point& vector_start_point, const Point& vector_end_point) : vector_end_point_ (vector_end_point - vector_start_point) {}
+    Vector(const LineSegment<Point>& segment) : vector_end_point_ (segment.GetEnd() - segment.GetBegin()) {}
 
-    double GetX() const { return vector_end_point_.GetX (); }
-    double GetY() const { return vector_end_point_.GetY (); }
-    double GetZ() const { return vector_end_point_.GetZ (); }
+    double GetX() const { return vector_end_point_.GetX(); }
+    double GetY() const { return vector_end_point_.GetY(); }
+    double GetZ() const { return vector_end_point_.GetZ(); }
+
+    bool IsZero() const { return vector_end_point_.IsZero(); }
 
     static double DotProduct   (const Vector& first, const Vector& second);
     static Vector CrossProduct (const Vector& first, const Vector& second);
@@ -99,18 +104,22 @@ struct Line
     const Vector offset_;
 };
 
+template<typename T>
 struct LineSegment
 {
+    static_assert(std::is_same<T, double>::value || std::is_same<T, Point>::value,
+                  "T must be double or Point");
+
   public:
-    LineSegment (double begin, double end) :
-        begin_ (begin), end_ (end) {} 
+    LineSegment(T begin, T end) :
+        begin_(begin), end_(end) {} 
     
-    double GetBegin() const { return begin_; }
-    double GetEnd()   const { return end_; }
+    T GetBegin() const { return begin_; }
+    T GetEnd()   const { return end_; }
 
   private:
-    const double begin_;
-    const double end_;
+    const T begin_;
+    const T end_;
 };
 
 enum class TrianglePlaneIntersection
