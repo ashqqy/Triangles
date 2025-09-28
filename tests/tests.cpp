@@ -223,6 +223,21 @@ TEST (triangles_intersection, same_edge_coplanar)
     GTEST_EXPECT_TRUE (answer);
 }
 
+TEST (triangles_intersection, point_in_triangle)
+{
+    Triangles::Triangle first  {Triangles::Point (-1.5, 0, 0), Triangles::Point(0, 0, 0), Triangles::Point(0, -1.4, 0)};
+    Triangles::Triangle second {Triangles::Point(0.1, 0.1, 1), Triangles::Point(0.1, 0.1, -1), Triangles::Point (-0.6, -0.5, 0)};
+    bool answer = Triangles::CheckTrianglesIntersection (first, second);
+    GTEST_EXPECT_TRUE (answer);
+}
+
+TEST (triangles_intersection, point_in_triangle2)
+{
+    Triangles::Triangle first  {Triangles::Point (-1.5, 0, 0), Triangles::Point(0, 0, 0), Triangles::Point(0, -1.4, 0)};
+    Triangles::Triangle second {Triangles::Point(0.1, 0.1, 1), Triangles::Point (-0.6, -0.5, 0), Triangles::Point(-1, 1, 1.5)};
+    bool answer = Triangles::CheckTrianglesIntersection (first, second);
+    GTEST_EXPECT_TRUE (answer);
+}
 
 TEST (triangles_intersection, same_edge)
 {
@@ -235,7 +250,7 @@ TEST (triangles_intersection, same_edge)
 TEST (triangles_intersection, vertice_on_edge)
 {
     Triangles::Triangle first  {Triangles::Point (0, 0, 0), Triangles::Point(0, -1, 0), Triangles::Point(-1, 0, 0)};
-    Triangles::Triangle second {Triangles::Point (0, -1, 1), Triangles::Point(-1, -1, 1), Triangles::Point(-0.5, -0.5, 0)};
+    Triangles::Triangle second {Triangles::Point(-0.5, -0.5, 0), Triangles::Point (0, -1, 1), Triangles::Point(-1, -1, 1)};
     bool answer = Triangles::CheckTrianglesIntersection (first, second);
     GTEST_EXPECT_TRUE (answer);
 }
@@ -247,3 +262,52 @@ TEST (triangles_intersection, vertice_not_on_edge)
     bool answer = Triangles::CheckTrianglesIntersection (first, second);
     GTEST_EXPECT_FALSE (answer);
 }
+
+TEST (triangles_intersection, degenerate_point_triangle_false)
+{
+    Triangles::Triangle first  {Triangles::Point (1, 1, 1), Triangles::Point(1, 1, 1), Triangles::Point(1, 1, 1)};
+    Triangles::Triangle second {Triangles::Point (0, 0, 0), Triangles::Point(0, 1, 0), Triangles::Point(1, 0, 0)};
+    bool answer = Triangles::CheckTrianglesIntersection (first, second);
+    GTEST_EXPECT_FALSE (answer);
+}
+
+TEST (triangles_intersection, degenerate_point_triangle_true)
+{
+    Triangles::Triangle first  {Triangles::Point (0.35, 0.35, 0), Triangles::Point(0.35, 0.35, 0), Triangles::Point(0.35, 0.35, 0)};
+    Triangles::Triangle second {Triangles::Point (0, 0, 0), Triangles::Point(0, 1, 0), Triangles::Point(1, 0, 0)};
+    bool answer = Triangles::CheckTrianglesIntersection (first, second);
+    GTEST_EXPECT_TRUE (answer);
+}
+
+TEST (triangles_intersection, degenerate_segment_triangle_false)
+{
+    Triangles::Triangle first  {Triangles::Point (-0.35, 0.2, 3), Triangles::Point(-0.35, 0.2, 3), Triangles::Point(100, 100, 100)};
+    Triangles::Triangle second {Triangles::Point (0, 0, 0), Triangles::Point(0, -1, 0), Triangles::Point(-1, 0, 0)};
+    bool answer = Triangles::CheckTrianglesIntersection (first, second);
+    GTEST_EXPECT_FALSE (answer);
+}
+
+TEST (triangles_intersection, degenerate_segment_triangle_true)
+{
+    Triangles::Triangle first  {Triangles::Point (-0.35, 0.2, 3), Triangles::Point(-0.35, 0.2, 3), Triangles::Point(-0.2, -0.2, -1)};
+    Triangles::Triangle second {Triangles::Point (0, 0, 0), Triangles::Point(0, -1, 0), Triangles::Point(-1, 0, 0)};
+    bool answer = Triangles::CheckTrianglesIntersection (first, second);
+    GTEST_EXPECT_TRUE (answer);
+}
+
+TEST (triangles_intersection, degenerate_segment_segment_true)
+{
+    Triangles::Triangle first  {Triangles::Point(0.8, 0, 0), Triangles::Point(0, -1.4, 0), Triangles::Point(0.8, 0, 0)};
+    Triangles::Triangle second {Triangles::Point(0, 0, 0.8), Triangles::Point(1.123044257912, -0.6417395759495, -0.6897525870255), Triangles::Point(0, 0, 0.8)};
+    bool answer = Triangles::CheckTrianglesIntersection (first, second);
+    GTEST_EXPECT_TRUE (answer);
+}
+
+TEST (triangles_intersection, degenerate_segment_segment_false)
+{
+    Triangles::Triangle first  {Triangles::Point(0.8, 0, 0), Triangles::Point(0, -1.4, 0), Triangles::Point(0.8, 0, 0)};
+    Triangles::Triangle second {Triangles::Point(0, 0, 0.8), Triangles::Point(0, 0, 0.8), Triangles::Point(-1, 0, 0)};
+    bool answer = Triangles::CheckTrianglesIntersection (first, second);
+    GTEST_EXPECT_FALSE (answer);
+}
+

@@ -140,12 +140,15 @@ struct Triangle
             degeneration_type_ = TriangleDegenerationType::POINT;
         }
 
-        if (a_ == b_ || b_ == c_ || a_ == c_)
+        else if (a_ == b_ || b_ == c_ || a_ == c_)
         {
             degeneration_type_ = TriangleDegenerationType::SEGMENT;
         }
-
-        degeneration_type_ = TriangleDegenerationType::TRIANGLE;
+        
+        else
+        {
+            degeneration_type_ = TriangleDegenerationType::TRIANGLE;
+        }
     }
 
     Point GetA() const { return a_; }

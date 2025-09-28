@@ -95,7 +95,7 @@ bool CheckDegenerateTrianglesIntersection (const Triangle& first_triangle, const
                     return CheckSegmentPointIntersection(first_segment, second_triangle.GetA());
                     
                 case TriangleDegenerationType::SEGMENT:
-                {
+                {                    
                     Point segment_start = second_triangle.GetA();
                     Point segment_end   = (segment_start != second_triangle.GetB()) ? second_triangle.GetB() : second_triangle.GetC();
                     LineSegment second_segment(segment_start, segment_end);
@@ -145,7 +145,7 @@ TrianglePlaneIntersection CheckPlaneTriangleIntersection(const TrianglePlaneDist
     const bool coplanar = DoubleEqual(distances.d_a, 0) && DoubleEqual(distances.d_b, 0) && DoubleEqual(distances.d_c, 0);
     if (coplanar) { return TrianglePlaneIntersection::COPLANAR; }
 
-    bool same_side = (DoubleGreater(distances.d_a, 0) && DoubleGreater(distances.d_b, 0) && DoubleGreater(distances.d_b, 0)) ||
+    bool same_side = (DoubleGreater(distances.d_a, 0) && DoubleGreater(distances.d_b, 0) && DoubleGreater(distances.d_c, 0)) ||
                      (DoubleLess(distances.d_a, 0)    && DoubleLess(distances.d_b, 0)    && DoubleLess(distances.d_c, 0));
     if (same_side) 
     {
@@ -194,7 +194,7 @@ bool CheckCoplanarTrianglesIntersection(const Triangle& first_triangle, const Tr
     return false;
 }
 
-// Don’t try to understand this function - it’s a total ****, but it works :)
+// it’s a total ****, but it works :)
 LineSegment<double> FindTriangleLineIntersectionSegment(const Triangle& triangle, const Line& line, const TrianglePlaneDistances& distances)
 {
     // Project vertices to the line: projection = Dot (Direction, (Vertice - Line_offset))
@@ -374,9 +374,30 @@ bool CheckTriangleSegmentIntersection(const Triangle& triangle, const LineSegmen
     LineSegment bc = LineSegment(triangle.GetB(), triangle.GetC());
     LineSegment ca = LineSegment(triangle.GetC(), triangle.GetA());
 
-    if (CheckSegmentsIntersection(ab, segment)) return true;
-    if (CheckSegmentsIntersection(bc, segment)) return true;
-    if (CheckSegmentsIntersection(ca, segment)) return true;
+    Plane plane(triangle);
+    Vector normal = plane.GetNormal();
+    Vector direction(segment);
+
+    double dot = Vector::DotProduct(normal, direction);
+
+    // Is segment parallel to plane
+    if (DoubleEqual(dot, 0))
+    {
+        if (CheckSegmentsIntersection(ab, segment)) return true;
+        if (CheckSegmentsIntersection(bc, segment)) return true;
+        if (CheckSegmentsIntersection(ca, segment)) return true;
+
+        return false;
+    }
+
+    // not parallel
+    double t = -(Vector::DotProduct(normal, Vector(segment.GetBegin())) + plane.GetOffset()) / dot;
+    
+    if (DoubleLessOrEqual(0, t) && DoubleLessOrEqual(t, 1))
+    {
+        Point intersection_point = segment.GetBegin() + Point(direction.GetX() * t, direction.GetY() * t, direction.GetZ() * t);
+        return triangle.ContainsPoint(intersection_point);
+    }
 
     return false;
 }
