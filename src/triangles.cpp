@@ -13,6 +13,12 @@ namespace Triangles
 // returns true if triangles intersect, false otherwise
 bool CheckTrianglesIntersection(const Triangle& first_triangle, const Triangle& second_triangle)
 {
+    if (first_triangle.DegenerationType()  != TriangleDegenerationType::TRIANGLE || 
+        second_triangle.DegenerationType() != TriangleDegenerationType::TRIANGLE)
+    {
+        return CheckDegenerateTrianglesIntersection(first_triangle, second_triangle);
+    }
+
     const Plane first_plane  (first_triangle);
     const Plane second_plane (second_triangle);
 
@@ -35,22 +41,6 @@ bool CheckTrianglesIntersection(const Triangle& first_triangle, const Triangle& 
         return CheckCoplanarTrianglesIntersection(first_triangle, second_triangle);
     }
 
-    // Vertice of first triangle lies inside second
-    if (first_triangle.ContainsPoint(second_triangle.GetA()) || 
-        first_triangle.ContainsPoint(second_triangle.GetB()) ||
-        first_triangle.ContainsPoint(second_triangle.GetC()))
-    {
-        return true;
-    }
-
-    // Vertice of second triangle lies inside first
-    if (second_triangle.ContainsPoint(first_triangle.GetA()) || 
-        second_triangle.ContainsPoint(first_triangle.GetB()) ||
-        second_triangle.ContainsPoint(first_triangle.GetC()))
-    {
-        return true;
-    }
-
     // Common case
 
     // optimization: don't compute offset point
@@ -64,6 +54,91 @@ bool CheckTrianglesIntersection(const Triangle& first_triangle, const Triangle& 
 }
 
 // ------------------------------------- Main support functions --------------------------------------
+
+bool CheckDegenerateTrianglesIntersection (const Triangle& first_triangle, const Triangle& second_triangle)
+{
+    switch (first_triangle.DegenerationType())
+    {
+        case TriangleDegenerationType::POINT:
+        {
+            Point first_point = first_triangle.GetA();
+            
+            switch (second_triangle.DegenerationType())
+            {
+                case TriangleDegenerationType::POINT:
+                    return first_point == second_triangle.GetA();
+                    
+                case TriangleDegenerationType::SEGMENT:
+                {
+                    Point segment_start = second_triangle.GetA();
+                    Point segment_end   = (segment_start != second_triangle.GetB()) ? second_triangle.GetB() : second_triangle.GetC();
+                    LineSegment second_segment(segment_start, segment_end);
+
+                    return CheckSegmentPointIntersection(second_segment, first_point);
+                }
+                    
+                case TriangleDegenerationType::TRIANGLE:
+                    return second_triangle.ContainsPoint(first_point);
+            }
+            break;
+        }
+            
+        case TriangleDegenerationType::SEGMENT:
+        {
+            Point first_segment_start = first_triangle.GetA();
+            Point first_segment_end   = (first_segment_start != first_triangle.GetB()) ? first_triangle.GetB() : first_triangle.GetC();
+            LineSegment first_segment(first_segment_start, first_segment_end);
+            
+            switch (second_triangle.DegenerationType())
+            {
+                case TriangleDegenerationType::POINT:
+                    return CheckSegmentPointIntersection(first_segment, second_triangle.GetA());
+                    
+                case TriangleDegenerationType::SEGMENT:
+                {
+                    Point segment_start = second_triangle.GetA();
+                    Point segment_end   = (segment_start != second_triangle.GetB()) ? second_triangle.GetB() : second_triangle.GetC();
+                    LineSegment second_segment(segment_start, segment_end);
+
+                    return CheckSegmentsIntersection(first_segment, second_segment);
+                }
+                    
+                case TriangleDegenerationType::TRIANGLE:
+                    return CheckTriangleSegmentIntersection(second_triangle, first_segment);
+            }
+            break;
+        }
+            
+        case TriangleDegenerationType::TRIANGLE:
+        {
+            switch (second_triangle.DegenerationType())
+            {
+                case TriangleDegenerationType::POINT:
+                    return first_triangle.ContainsPoint(second_triangle.GetA());
+                    
+                case TriangleDegenerationType::SEGMENT:
+                {
+                    Point segment_start = second_triangle.GetA();
+                    Point segment_end   = (segment_start != second_triangle.GetB()) ? second_triangle.GetB() : second_triangle.GetC();
+                    LineSegment second_segment(segment_start, segment_end);
+
+                    return CheckTriangleSegmentIntersection(first_triangle, second_segment);
+                }
+
+                case TriangleDegenerationType::TRIANGLE:
+                    assert ("Unknown case of triangles degeneration"); 
+                    return false;
+            }
+            break;
+        }
+
+        default:
+            assert ("Unknown case of triangles degeneration"); 
+            return false;
+    }
+
+    return false;
+}
 
 TrianglePlaneIntersection CheckPlaneTriangleIntersection(const TrianglePlaneDistances& distances)
 {
@@ -119,6 +194,7 @@ bool CheckCoplanarTrianglesIntersection(const Triangle& first_triangle, const Tr
     return false;
 }
 
+// Don’t try to understand this function - it’s a total ****, but it works :)
 LineSegment<double> FindTriangleLineIntersectionSegment(const Triangle& triangle, const Line& line, const TrianglePlaneDistances& distances)
 {
     // Project vertices to the line: projection = Dot (Direction, (Vertice - Line_offset))
@@ -133,11 +209,43 @@ LineSegment<double> FindTriangleLineIntersectionSegment(const Triangle& triangle
 
     TrianglePlaneDistances new_distances;
 
-    // TODO: points lies on the edge 
+    // Are two points lies on the triangle plane?
+    if (DoubleEqual(distances.d_a, 0) && DoubleEqual(distances.d_b, 0))
+    {
+        return LineSegment(std::min(a_projection, b_projection), std::max(a_projection, b_projection));
+    }
+    if (DoubleEqual(distances.d_b, 0) && DoubleEqual(distances.d_c, 0))
+    {
+        return LineSegment(std::min(b_projection, c_projection), std::max(b_projection, c_projection));
+    }
+    if (DoubleEqual(distances.d_a, 0) && DoubleEqual(distances.d_c, 0))
+    {
+        return LineSegment(std::min(a_projection, c_projection), std::max(a_projection, c_projection));
+    }
+
+    // Is one point lies on the triangle plane and other points doesn't lies on the same side?
+    if (DoubleEqual(distances.d_a, 0) && (DoubleGreater(distances.d_b, 0) != DoubleGreater(distances.d_c, 0)) ||
+        DoubleEqual(distances.d_b, 0) && (DoubleGreater(distances.d_a, 0) != DoubleGreater(distances.d_c, 0)))
+    {
+        first_point_projection = a_projection;
+        second_point_projection = b_projection;
+        mid_point_projection = c_projection;
+
+        new_distances = {distances.d_a, distances.d_b, distances.d_c};
+    }
+    else if (DoubleEqual(distances.d_c, 0) && (DoubleGreater(distances.d_a, 0) != DoubleGreater(distances.d_b, 0)))
+    {
+        first_point_projection = a_projection;
+        second_point_projection = c_projection;
+        mid_point_projection = b_projection;
+
+        new_distances = {distances.d_a, distances.d_c, distances.d_b};
+    }
     
     // Two points are on one side of the line, the remaining point is on the other side.
     // To determine this, we use the distances from the vertices of the triangle to the plane of the second triangle
-    if ((distances.d_a > 0) == (distances.d_b > 0))
+    else if ((DoubleGreater(distances.d_a, 0) && DoubleGreater(distances.d_b, 0)) || 
+             (DoubleLess   (distances.d_a, 0) && DoubleLess   (distances.d_b, 0)))
     {
         first_point_projection = a_projection;
         second_point_projection = b_projection;
@@ -146,7 +254,8 @@ LineSegment<double> FindTriangleLineIntersectionSegment(const Triangle& triangle
         new_distances = {distances.d_a, distances.d_b, distances.d_c};
     }
 
-    else if ((distances.d_a > 0) == (distances.d_c > 0))
+    else if ((DoubleGreater(distances.d_a, 0) && DoubleGreater(distances.d_c, 0)) ||
+             (DoubleLess   (distances.d_a, 0) && DoubleLess   (distances.d_c, 0)))
     {
         first_point_projection = a_projection;
         second_point_projection = c_projection;
@@ -155,13 +264,19 @@ LineSegment<double> FindTriangleLineIntersectionSegment(const Triangle& triangle
         new_distances = {distances.d_a, distances.d_c, distances.d_b};
     }
 
-    else 
+    else if ((DoubleGreater(distances.d_b, 0) && DoubleGreater(distances.d_c, 0)) ||
+             (DoubleLess   (distances.d_b, 0) && DoubleLess   (distances.d_c, 0)))
     {
         first_point_projection = b_projection;
         second_point_projection = c_projection;
         mid_point_projection = a_projection;
 
         new_distances = {distances.d_b, distances.d_c, distances.d_a};
+    }
+
+    else
+    {
+        assert ("Unknown case of triangles intersection");
     }
 
     // division by zero
@@ -259,11 +374,25 @@ bool CheckTriangleSegmentIntersection(const Triangle& triangle, const LineSegmen
     LineSegment bc = LineSegment(triangle.GetB(), triangle.GetC());
     LineSegment ca = LineSegment(triangle.GetC(), triangle.GetA());
 
-    if (CheckSegmentsIntersection (ab, segment)) return true;
-    if (CheckSegmentsIntersection (bc, segment)) return true;
-    if (CheckSegmentsIntersection (ca, segment)) return true;
+    if (CheckSegmentsIntersection(ab, segment)) return true;
+    if (CheckSegmentsIntersection(bc, segment)) return true;
+    if (CheckSegmentsIntersection(ca, segment)) return true;
 
     return false;
+}
+
+bool CheckSegmentPointIntersection (const LineSegment<Point>& segment, const Point& point)
+{
+    Vector direction(segment);
+    Vector connection(point, segment.GetBegin());
+
+    if (!Vector::CrossProduct(direction, connection).IsZero())
+    {
+        return false;
+    }
+
+    return DoubleGreaterOrEqual(Vector::DotProduct(connection, direction), 0) && 
+           DoubleLessOrEqual   (Vector::DotProduct(connection, direction), Vector::DotProduct(direction, direction));
 }
 
 // ----------------------------------- Distance to plane functions -----------------------------------

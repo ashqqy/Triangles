@@ -231,3 +231,19 @@ TEST (triangles_intersection, same_edge)
     bool answer = Triangles::CheckTrianglesIntersection (first, second);
     GTEST_EXPECT_TRUE (answer);
 }
+
+TEST (triangles_intersection, vertice_on_edge)
+{
+    Triangles::Triangle first  {Triangles::Point (0, 0, 0), Triangles::Point(0, -1, 0), Triangles::Point(-1, 0, 0)};
+    Triangles::Triangle second {Triangles::Point (0, -1, 1), Triangles::Point(-1, -1, 1), Triangles::Point(-0.5, -0.5, 0)};
+    bool answer = Triangles::CheckTrianglesIntersection (first, second);
+    GTEST_EXPECT_TRUE (answer);
+}
+
+TEST (triangles_intersection, vertice_not_on_edge)
+{
+    Triangles::Triangle first  {Triangles::Point (0, 0, 0), Triangles::Point(0, -1, 0), Triangles::Point(-1, 0, 0)};
+    Triangles::Triangle second {Triangles::Point (0, -1, 1), Triangles::Point(-0.51, -0.5, 0), Triangles::Point(-1, -1, 1)};
+    bool answer = Triangles::CheckTrianglesIntersection (first, second);
+    GTEST_EXPECT_FALSE (answer);
+}
