@@ -45,7 +45,6 @@ int main ()
 
     for (auto i: intersecting_triangles)
     {
-        std::cout << i << " ";
+        std::cout << i << std::endl;
     }
-    std::cout << std::endl;
 }
