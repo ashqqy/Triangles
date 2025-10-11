@@ -6,7 +6,7 @@
 
 int main ()
 {
-    size_t triangles_count = 0;
+    std::size_t triangles_count = 0;
     std::cin >> triangles_count;
     if (!(0 < triangles_count && triangles_count < 1000000))
     {
@@ -14,28 +14,27 @@ int main ()
         return 1;
     }
 
-    std::vector<Triangles::Triangle> triangles;
-    triangles.reserve (triangles_count);
+    std::vector<Triangles::Triangle<double, 3>> triangles;
+    triangles.reserve(triangles_count);
 
-    for (size_t i = 0; i < triangles_count; ++i)
+    for (std::size_t i = 0; i < triangles_count; ++i)
     {
-        double x1, y1, z1, x2, y2, z2, x3, y3, z3;
-        std::cin >> x1 >> y1 >> z1 >> x2 >> y2 >> z2 >> x3 >> y3 >> z3;
+        Triangles::Vector<double, 3> A;
+        Triangles::Vector<double, 3> B;
+        Triangles::Vector<double, 3> C;
 
-        Triangles::Point A (x1, y1, z1);
-        Triangles::Point B (x2, y2, z2);
-        Triangles::Point C (x3, y3, z3);
+        std::cin >> A >> B >> C;
         
-        triangles.emplace_back (A, B, C);
+        triangles.emplace_back(A, B, C);
     }
 
-    std::set<size_t> intersecting_triangles;
+    std::set<std::size_t> intersecting_triangles;
 
-    for (size_t i = 0; i < triangles_count; ++i)
+    for (std::size_t i = 0; i < triangles_count; ++i)
     {
-        for (size_t j = i + 1; j < triangles_count; ++j)
+        for (std::size_t j = i + 1; j < triangles_count; ++j)
         {
-            if (Triangles::CheckTrianglesIntersection (triangles[i], triangles[j]))
+            if (triangles[i].CheckIntersection(triangles[j]))
             {
                 intersecting_triangles.insert (i);
                 intersecting_triangles.insert (j);
