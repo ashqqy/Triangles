@@ -28,6 +28,7 @@ inline bool FloatingPointLE(T left, T right, T epsilon = std::numeric_limits<T>:
     T max_val = std::max({std::abs(left), std::abs(right), T(1.0)});
     return left < right + epsilon * max_val;
 }
+
 template<FloatingPoint T>
 inline bool FloatingPointL(T left, T right, T epsilon = std::numeric_limits<T>::epsilon())
 {
@@ -150,13 +151,16 @@ struct Vector
         return is;
     }
 
-    bool IsZero() const 
+    friend std::ostream& operator<<(std::ostream& os, Vector<T, Dim>& vec)
     {
-        for (const auto& coord : coords)
-            if (!FloatingPointE(coord, T{0}))
-                return false;
+        std::cout << "(";
+        for (std::size_t i = 0; i < Dim - 1; ++i)
+        {
+            std::cout << vec[i] << ", ";
+        }
+        std::cout << vec[Dim - 1] << ")";
 
-        return true;
+        return os;
     }
 
     T DotProduct(const Vector<T, Dim>& other) const
@@ -187,6 +191,30 @@ struct Vector
         }
     }
 
+    bool IsZero() const 
+    {
+        for (const auto& coord : coords)
+            if (!FloatingPointE(coord, T{0}))
+                return false;
+
+        return true;
+    }
+
+    bool IsParallel(const Vector<T, Dim>& other) const 
+    {
+        if constexpr (Dim == 3)
+        {
+            return CrossProduct(other).IsZero();
+        }
+
+        if constexpr (Dim == 2)
+        {
+            return FloatingPointE(CrossProduct(other), T{0});
+        }
+
+        return true;
+    }
+
     T LengthSquared() const
     {
         return DotProduct(*this);
@@ -210,24 +238,18 @@ struct LineSegment
     LineSegment(Vector<T, Dim> from, Vector<T, Dim> to) :
         begin(from), end(to), direction(to - from) {} 
 
+    T LengthSquared() const
+    {
+        return direction.DotProduct(direction);
+    }
+
     bool ContainsPoint(const Vector<T, Dim>& point) const
     {
         Vector<T, Dim> connection {begin, point};
 
-        if constexpr (Dim == 2)
+        if (!direction.IsParallel(connection))
         {
-            if (!FloatingPointE(direction.CrossProduct(connection), T{0}))
-            {
-                return false;
-            }
-        }
-
-        else if constexpr (Dim == 3)
-        {
-            if (!direction.CrossProduct(connection).IsZero())
-            {
-                return false;
-            }
+            return false;
         }
 
         T connection_dot_direction = connection.DotProduct(direction);
@@ -367,7 +389,12 @@ struct LineSegment<T, 1>
 
     LineSegment() = default;
 
-    LineSegment(T from, T to) : begin(from), end(to) {}
+    LineSegment(T from, T to) : begin(std::min(from, to)), end(std::max(from, to)) {}
+
+    T Length() const
+    {
+        return std::abs(end - begin);
+    }
     
     bool ContainsPoint(const Vector<T, 1>& point) const
     {
@@ -376,10 +403,7 @@ struct LineSegment<T, 1>
 
     bool ContainsPoint(T point) const
     {
-        if (begin <= end)
             return FloatingPointLE(begin, point) && FloatingPointLE(point, end);
-        else
-            return FloatingPointLE(end, point) && FloatingPointLE(point, begin);
     }
 
     bool CheckIntersection(const LineSegment<T, 1>& other) const
@@ -464,7 +488,7 @@ struct Triangle
         if (a == b && b == c)
             degeneration_type = TriangleDegenerationType::POINT;
 
-        else if (a == b || b == c || a == c)
+        else if (Vector<T, Dim>{a, b}.IsParallel(Vector<T, Dim>{a, c}))
             degeneration_type = TriangleDegenerationType::SEGMENT;
         
         else
@@ -543,9 +567,11 @@ struct Triangle
         // T t = -(plane.normal.DotProduct(segment.begin) + plane.offset) / dot;
         T t = -(plane.DistanceToPoint(segment.begin)) / dot;
         
+
         if (FloatingPointLE(T{0}, t) && FloatingPointLE(t, T{1.0}))
         {
             Vector intersection_point = segment.begin + segment.direction * t;
+
             return ContainsPoint(intersection_point);
         }
 
@@ -558,7 +584,7 @@ struct Triangle
         return CheckParallelTriangleSegmentIntersection(segment);
     }
 
-    // Triangle with segment intersection (3D)
+    // Triangle with triangle intersection (3D)
     bool CheckIntersection(const Triangle<T, 3>& other) const
     {
         if (degeneration_type       != TriangleDegenerationType::TRIANGLE || 
@@ -600,9 +626,15 @@ struct Triangle
         return first_intersection.CheckIntersection(second_intersection);
     }
 
-    // Triangle with segment intersection (2D)
+    // Triangle with triangle intersection (2D)
     bool CheckIntersection(const Triangle<T, 2>& other) const
     {
+        if (degeneration_type       != TriangleDegenerationType::TRIANGLE || 
+            other.degeneration_type != TriangleDegenerationType::TRIANGLE)
+        {
+            return CheckDegenerateTrianglesIntersection(other);
+        }
+        
         return CheckCoplanarTrianglesIntersection(other);
     }
 
@@ -680,6 +712,25 @@ struct Triangle
         return false;
     }
 
+    LineSegment<T, Dim> FindDegenerateTriangleSegmentWithMaxLength() const
+    {
+        assert (degeneration_type == TriangleDegenerationType::SEGMENT);
+
+        LineSegment<T, Dim> ab{a, b};
+        LineSegment<T, Dim> ac{a, c};
+        LineSegment<T, Dim> bc{b, c};
+
+        LineSegment<T, Dim> segment = ab;
+        if (ac.LengthSquared() > segment.LengthSquared()) {
+            segment = ac;
+        }
+        if (bc.LengthSquared() > segment.LengthSquared()) {
+            segment = bc;
+        }
+
+        return segment;
+    }
+
     bool CheckDegenerateTrianglesIntersection (const Triangle<T, Dim>& other) const
     {
         switch (degeneration_type)
@@ -693,11 +744,9 @@ struct Triangle
                         
                     case TriangleDegenerationType::SEGMENT:
                     {
-                        Vector<T, Dim> segment_start = other.a;
-                        Vector<T, Dim> segment_end   = (segment_start != other.b) ? other.b : other.c;
-                        LineSegment<T, Dim> second_segment(segment_start, segment_end);
+                        LineSegment<T, Dim> segment = other.FindDegenerateTriangleSegmentWithMaxLength();
 
-                        return second_segment.ContainsPoint(a);
+                        return segment.ContainsPoint(a);
                     }
                         
                     case TriangleDegenerationType::TRIANGLE:
@@ -708,9 +757,7 @@ struct Triangle
                 
             case TriangleDegenerationType::SEGMENT:
             {
-                Vector<T, Dim> first_segment_start = a;
-                Vector<T, Dim> first_segment_end   = (first_segment_start != b) ? b : c;
-                LineSegment first_segment(first_segment_start, first_segment_end);
+                LineSegment<T, Dim> first_segment = FindDegenerateTriangleSegmentWithMaxLength();
                 
                 switch (other.degeneration_type)
                 {
@@ -718,16 +765,16 @@ struct Triangle
                         return first_segment.ContainsPoint(other.a);
                         
                     case TriangleDegenerationType::SEGMENT:
-                    {                    
-                        Vector<T, Dim> segment_start = other.a;
-                        Vector<T, Dim> segment_end   = (segment_start != other.b) ? other.b : other.c;
-                        LineSegment second_segment(segment_start, segment_end);
+                    {     
+                        LineSegment<T, Dim> second_segment = other.FindDegenerateTriangleSegmentWithMaxLength();
 
                         return first_segment.CheckIntersection(second_segment);
                     }
                         
                     case TriangleDegenerationType::TRIANGLE:
+                    {
                         return other.CheckIntersection(first_segment);
+                    }
                 }
                 break;
             }
@@ -741,11 +788,9 @@ struct Triangle
                         
                     case TriangleDegenerationType::SEGMENT:
                     {
-                        Vector<T, Dim> segment_start = other.a;
-                        Vector<T, Dim> segment_end   = (segment_start != other.b) ? other.b : other.c;
-                        LineSegment second_segment(segment_start, segment_end);
+                        LineSegment<T, Dim> segment = other.FindDegenerateTriangleSegmentWithMaxLength();
 
-                        return CheckIntersection(second_segment);
+                        return CheckIntersection(segment);
                     }
 
                     case TriangleDegenerationType::TRIANGLE:

@@ -307,6 +307,23 @@ TEST (segment_contains_point, 1d_basic)
     GTEST_EXPECT_FALSE (segment_f.ContainsPoint(point_outside_f));
 }
 
+TEST (segment_contains_point, 1d_reverse)
+{
+    LineSegment<double, 1> segment_d(1.0, -1.0);
+    double point_inside_d = 0.0;
+    double point_outside_d = -2.0;
+
+    GTEST_EXPECT_TRUE (segment_d.ContainsPoint(point_inside_d));
+    GTEST_EXPECT_FALSE (segment_d.ContainsPoint(point_outside_d));
+
+    LineSegment<float, 1> segment_f(1.0f, -1.0f);
+    float point_inside_f = 0.0f;
+    float point_outside_f = -2.0f;
+
+    GTEST_EXPECT_TRUE (segment_f.ContainsPoint(point_inside_f));
+    GTEST_EXPECT_FALSE (segment_f.ContainsPoint(point_outside_f));
+}
+
 TEST (segment_contains_point, 1d_borderline)
 {
     LineSegment<double, 1> segment_d(-2.0, -1.0);
@@ -341,6 +358,23 @@ TEST (segment_contains_point, 2d_basic)
     GTEST_EXPECT_FALSE (segment_f.ContainsPoint(point_outside_f));
 }
 
+TEST (segment_contains_point, 2d_reverse)
+{
+    LineSegment<double, 2> segment_d({1.0, 1.0}, {0.0, 0.0});
+    Vector<double, 2> point_inside_d = {0.5, 0.5};
+    Vector<double, 2> point_outside_d = {2.0, 5.0};
+
+    GTEST_EXPECT_TRUE (segment_d.ContainsPoint(point_inside_d));
+    GTEST_EXPECT_FALSE (segment_d.ContainsPoint(point_outside_d));
+
+    LineSegment<float, 2> segment_f({1.0f, 1.0f}, {0.0f, 0.0f});
+    Vector<float, 2> point_inside_f = {0.5f, 0.5f};
+    Vector<float, 2> point_outside_f = {2.0f, 5.0f};
+
+    GTEST_EXPECT_TRUE (segment_f.ContainsPoint(point_inside_f));
+    GTEST_EXPECT_FALSE (segment_f.ContainsPoint(point_outside_f));
+}
+
 TEST (segment_contains_point, 2d_borderline)
 {
     LineSegment<double, 2> segment_d({0.0, 0.0}, {1.0, 1.0});
@@ -368,6 +402,23 @@ TEST (segment_contains_point, 3d_basic)
     GTEST_EXPECT_FALSE (segment_d.ContainsPoint(point_outside_d));
 
     LineSegment<float, 3> segment_f({0.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f});
+    Vector<float, 3> point_inside_f = {0.5f, 0.5f, 0.5f};
+    Vector<float, 3> point_outside_f = {2.0f, 2.0f, 2.0f};
+
+    GTEST_EXPECT_TRUE (segment_f.ContainsPoint(point_inside_f));
+    GTEST_EXPECT_FALSE (segment_f.ContainsPoint(point_outside_f));
+}
+
+TEST (segment_contains_point, 3d_reverse)
+{
+    LineSegment<double, 3> segment_d({1.0, 1.0, 1.0}, {0.0, 0.0, 0.0});
+    Vector<double, 3> point_inside_d = {0.5, 0.5, 0.5};
+    Vector<double, 3> point_outside_d = {2.0, 2.0, 5.0};
+
+    GTEST_EXPECT_TRUE (segment_d.ContainsPoint(point_inside_d));
+    GTEST_EXPECT_FALSE (segment_d.ContainsPoint(point_outside_d));
+
+    LineSegment<float, 3> segment_f({1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f});
     Vector<float, 3> point_inside_f = {0.5f, 0.5f, 0.5f};
     Vector<float, 3> point_outside_f = {2.0f, 2.0f, 2.0f};
 
@@ -413,6 +464,23 @@ TEST (segment_segment_check_intersection, 1d_basic)
     GTEST_EXPECT_FALSE (first_f.CheckIntersection(second_not_intersect_f));
 }
 
+TEST (segment_segment_check_intersection, 1d_reverse)
+{
+    LineSegment<double, 1> first_d(1.0, -1.0);
+    LineSegment<double, 1> second_intersect_d(2.0, 0.0);
+    LineSegment<double, 1> second_not_intersect_d(2.0, 1.1);
+
+    GTEST_EXPECT_TRUE  (first_d.CheckIntersection(second_intersect_d));
+    GTEST_EXPECT_FALSE (first_d.CheckIntersection(second_not_intersect_d));
+
+    LineSegment<float, 1> first_f(1.0f, -1.0f);
+    LineSegment<float, 1> second_intersect_f(2.0f, 0.0f);
+    LineSegment<float, 1> second_not_intersect_f(1.1f, 2.0f);
+
+    GTEST_EXPECT_TRUE  (first_f.CheckIntersection(second_intersect_f));
+    GTEST_EXPECT_FALSE (first_f.CheckIntersection(second_not_intersect_f));
+}
+
 TEST (segment_segment_check_intersection, 1d_borderline)
 {
     LineSegment<double, 1> first_d(-1.0, 1.0);
@@ -442,6 +510,23 @@ TEST (segment_segment_check_intersection, 2d_basic)
     LineSegment<float, 2> first_f({0.0f, 0.0f}, {1.0f, 1.0f});
     LineSegment<float, 2> second_intersect_f({0.0f, 1.0f}, {1.0f, 0.0f});
     LineSegment<float, 2> second_not_intersect_f({2.0f, 2.0f}, {3.0f, 3.0f});
+
+    GTEST_EXPECT_TRUE  (first_f.CheckIntersection(second_intersect_f));
+    GTEST_EXPECT_FALSE (first_f.CheckIntersection(second_not_intersect_f));
+}
+
+TEST (segment_segment_check_intersection, 2d_reverse)
+{
+    LineSegment<double, 2> first_d({1.0, 1.0}, {0.0, 0.0});
+    LineSegment<double, 2> second_intersect_d({1.0, 0.0}, {0.0, 1.0});
+    LineSegment<double, 2> second_not_intersect_d({3.0, 3.0}, {2.0, 2.0});
+
+    GTEST_EXPECT_TRUE  (first_d.CheckIntersection(second_intersect_d));
+    GTEST_EXPECT_FALSE (first_d.CheckIntersection(second_not_intersect_d));
+
+    LineSegment<float, 2> first_f({1.0f, 1.0f}, {0.0f, 0.0f});
+    LineSegment<float, 2> second_intersect_f({1.0f, 0.0f}, {0.0f, 1.0f});
+    LineSegment<float, 2> second_not_intersect_f({3.0f, 3.0f}, {2.0f, 2.0f});
 
     GTEST_EXPECT_TRUE  (first_f.CheckIntersection(second_intersect_f));
     GTEST_EXPECT_FALSE (first_f.CheckIntersection(second_not_intersect_f));
@@ -493,6 +578,23 @@ TEST (segment_segment_check_intersection, 3d_basic)
     LineSegment<float, 3> first_f({0.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f});
     LineSegment<float, 3> second_intersect_f({0.0f, 0.0f, 1.0f}, {1.0f, 1.0f, 0.0f});
     LineSegment<float, 3> second_not_intersect_f({2.0f, 2.0f, 2.0f}, {3.0f, 3.0f, 3.0f});
+
+    GTEST_EXPECT_TRUE  (first_f.CheckIntersection(second_intersect_f));
+    GTEST_EXPECT_FALSE (first_f.CheckIntersection(second_not_intersect_f));
+}
+
+TEST (segment_segment_check_intersection, 3d_reverse)
+{
+    LineSegment<double, 3> first_d({1.0, 1.0, 1.0}, {0.0, 0.0, 0.0});
+    LineSegment<double, 3> second_intersect_d({1.0, 1.0, 0.0}, {0.0, 0.0, 1.0});
+    LineSegment<double, 3> second_not_intersect_d({3.0, 3.0, 3.0}, {2.0, 2.0, 2.0});
+
+    GTEST_EXPECT_TRUE  (first_d.CheckIntersection(second_intersect_d));
+    GTEST_EXPECT_FALSE (first_d.CheckIntersection(second_not_intersect_d));
+
+    LineSegment<float, 3> first_f({1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f});
+    LineSegment<float, 3> second_intersect_f({1.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f});
+    LineSegment<float, 3> second_not_intersect_f({3.0f, 3.0f, 3.0f}, {2.0f, 2.0f, 2.0f});
 
     GTEST_EXPECT_TRUE  (first_f.CheckIntersection(second_intersect_f));
     GTEST_EXPECT_FALSE (first_f.CheckIntersection(second_not_intersect_f));
@@ -1175,6 +1277,72 @@ TEST (triangles_intersection, degenerate_segment_segment_false)
     GTEST_EXPECT_FALSE (first_f.CheckIntersection(second_f));
 }
 
+TEST (triangles_intersection, degenerate_collinear_triangle_false)
+{
+    Triangle<double, 3> first_d  ({1.0, 1.0, 1.0}, {0.0, 0.0, 0.0}, {2.0, 2.0, 2.0});
+    Triangle<double, 3> second_d ({0, 0, 0}, {0, -1, 0}, {-1, 0, 0});
+    GTEST_EXPECT_TRUE (first_d.CheckIntersection(second_d));
+
+    Triangle<float, 3> first_f  ({1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {2.0f, 2.0f, 2.0f});
+    Triangle<float, 3> second_f ({0, 0, 0}, {0, -1, 0}, {-1, 0, 0});
+    GTEST_EXPECT_TRUE (first_f.CheckIntersection(second_f));
+}
+
+TEST (triangles_intersection, degenerate_collinear_triangle_true)
+{
+    Triangle<double, 3> first_d  ({-1.0, -1.0, 0.0}, {0.0, 0.0, 0.0}, {1.0, 1.0, 0.0});
+    Triangle<double, 3> second_d ({0, 0, 0}, {0, -1, 0}, {-1, 0, 0});
+    GTEST_EXPECT_TRUE (first_d.CheckIntersection(second_d));
+
+    Triangle<float, 3> first_f  ({-1.0f, -1.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 0.0f});
+    Triangle<float, 3> second_f ({0, 0, 0}, {0, -1, 0}, {-1, 0, 0});
+    GTEST_EXPECT_TRUE (first_f.CheckIntersection(second_f));
+}
+
+TEST (triangles_intersection, degenerate_collinear_triangle_segment_true)
+{
+    Triangle<double, 3> first_d({0.0, 0.0, 0.0}, {0.5, 0.5, 0.0}, {1.0, 1.0, 0.0});
+    Triangle<double, 3> second_d({0.0, 1.0, 0.0}, {1.0, 0.0, 0.0}, {0.0, 0.0, 0.0});
+    GTEST_EXPECT_TRUE (first_d.CheckIntersection(second_d));
+
+    Triangle<float, 3> first_f({0.0f, 0.0f, 0.0f}, {0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 0.0f});
+    Triangle<float, 3> second_f({0.0f, 1.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f});
+    GTEST_EXPECT_TRUE (first_f.CheckIntersection(second_f));
+}
+
+TEST (triangles_intersection, degenerate_collinear_triangle_segment_false)
+{
+    Triangle<double, 3> first_d  ({3.0, 3.0, 0.0}, {5.0, 5.0, 0.0}, {4.0, 4.0, 0.0});
+    Triangle<double, 3> second_d ({0.0, 0.0, 0.0}, {1.0, 0.0, 0.0}, {0.0, 1.0, 0.0});
+    GTEST_EXPECT_FALSE (first_d.CheckIntersection(second_d));
+
+    Triangle<float, 3> first_f  ({3.0f, 3.0f, 0.0f}, {5.0f, 5.0f, 0.0f}, {4.0f, 4.0f, 0.0f});
+    Triangle<float, 3> second_f ({0.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f});
+    GTEST_EXPECT_FALSE (first_f.CheckIntersection(second_f));
+}
+
+TEST (triangles_intersection, both_degenerate_collinear_triangles_true)
+{
+    Triangle<double, 3> first_d  ({0.0, 0.0, 0.0}, {1.0, 1.0, 0.0}, {2.0, 2.0, 0.0});
+    Triangle<double, 3> second_d ({1.0, 1.0, 0.0}, {3.0, 3.0, 0.0}, {2.0, 2.0, 0.0});
+    GTEST_EXPECT_TRUE (first_d.CheckIntersection(second_d));
+
+    Triangle<float, 3> first_f  ({0.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 0.0f}, {2.0f, 2.0f, 0.0f});
+    Triangle<float, 3> second_f ({1.0f, 1.0f, 0.0f}, {3.0f, 3.0f, 0.0f}, {2.0f, 2.0f, 0.0f});
+    GTEST_EXPECT_TRUE (first_f.CheckIntersection(second_f));
+}
+
+TEST (triangles_intersection, both_degenerate_collinear_triangles_false)
+{
+    Triangle<double, 3> first_d  ({0.0, 0.0, 0.0}, {1.0, 1.0, 0.0}, {2.0, 2.0, 0.0});
+    Triangle<double, 3> second_d ({3.0, 3.0, 0.0}, {4.0, 4.0, 0.0}, {5.0, 5.0, 0.0});
+    GTEST_EXPECT_FALSE (first_d.CheckIntersection(second_d));
+
+    Triangle<float, 3> first_f  ({0.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 0.0f}, {2.0f, 2.0f, 0.0f});
+    Triangle<float, 3> second_f ({3.0f, 3.0f, 0.0f}, {4.0f, 4.0f, 0.0f}, {5.0f, 5.0f, 0.0f});
+    GTEST_EXPECT_FALSE (first_f.CheckIntersection(second_f));
+}
+
 TEST (triangles_intersection_2d, basic_no_intersection)
 {
     Triangle<double, 2> first_d({0, 0}, {1, 0}, {0, 1});
@@ -1309,7 +1477,7 @@ TEST (triangles_intersection_2d, degenerate_triangle_point_outside)
 
 TEST (triangles_intersection_2d, degenerate_triangle_line)
 {
-    Triangle<double, 2> first_d({0, 0}, {1, 0}, {0.5, 0});
+    Triangle<double, 2> first_d({1, 0}, {0, 0}, {0.5, 0});
     Triangle<double, 2> second_d({0.5, -1}, {0.5, 1}, {1, 0});
     GTEST_EXPECT_TRUE (first_d.CheckIntersection(second_d));
 
