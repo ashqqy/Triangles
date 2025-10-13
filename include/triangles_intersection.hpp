@@ -7,19 +7,22 @@
 #include "geometry.hpp"
 #include "uniform_grid.hpp"
 
-template<FloatingPoint T, std::size_t Dim>
-requires TriangleValidDimension<Dim>
+namespace Intersection 
+{
 
-std::set<std::size_t> FindIntersectingTriangles(std::vector<Geometry::Triangle<T, Dim>> triangles)
+template<FloatingPoint T, std::size_t Dim>
+requires Geometry::TriangleValidDimension<Dim>
+
+std::set<std::size_t> FindIntersectingTriangles(std::vector<Geometry::Triangle<T, Dim>>& triangles)
 {
     UniformGrid<T, Dim> grid(triangles);
     return grid.FindIntersectingTriangles();
 }
 
 template<FloatingPoint T, std::size_t Dim>
-requires TriangleValidDimension<Dim>
+requires Geometry::TriangleValidDimension<Dim>
 
-std::set<std::size_t> FindIntersectingTrianglesNaive(std::vector<Geometry::Triangle<T, Dim>> triangles)
+std::set<std::size_t> FindIntersectingTrianglesNaive(std::vector<Geometry::Triangle<T, Dim>>& triangles)
 {
     std::set<std::size_t> intersecting_triangles;
 
@@ -39,7 +42,7 @@ std::set<std::size_t> FindIntersectingTrianglesNaive(std::vector<Geometry::Trian
 }
 
 template<FloatingPoint T, std::size_t Dim>
-requires TriangleValidDimension<Dim>
+requires Geometry::TriangleValidDimension<Dim>
 
 std::vector<Geometry::Triangle<T, Dim>> InputTriangles()
 {
@@ -69,7 +72,7 @@ std::vector<Geometry::Triangle<T, Dim>> InputTriangles()
 }
 
 template<FloatingPoint T, std::size_t Dim>
-requires TriangleValidDimension<Dim>
+requires Geometry::TriangleValidDimension<Dim>
 
 std::vector<Geometry::Triangle<T, Dim>> InputTriangles(const std::string& filename)
 {
@@ -115,3 +118,5 @@ std::vector<Geometry::Triangle<T, Dim>> InputTriangles(const std::string& filena
     infile.close();
     return triangles;
 }
+
+} // namespace Intersection

@@ -6,9 +6,9 @@
 
 int main ()
 {
-    auto triangles = InputTriangles<double, 3>();
+    auto triangles = Intersection::InputTriangles<double, 3>();
 
-    std::set<std::size_t> intersecting_triangles = FindIntersectingTriangles(triangles);
+    std::set<std::size_t> intersecting_triangles = Intersection::FindIntersectingTriangles(triangles);
 
     for (auto i: intersecting_triangles)
     {

@@ -9,7 +9,7 @@
 // ---------------------------------------------------------------------------------------------------
 
 template<FloatingPoint T, std::size_t Dim>
-requires TriangleValidDimension<Dim>
+requires Geometry::TriangleValidDimension<Dim>
 
 struct BoundingBox
 {
@@ -23,7 +23,7 @@ struct BoundingBox
 };
 
 template<FloatingPoint T, std::size_t Dim>
-requires TriangleValidDimension<Dim>
+requires Geometry::TriangleValidDimension<Dim>
 
 struct UniformGrid
 {
@@ -54,20 +54,21 @@ struct UniformGrid
         
         for (const auto& cell : cells_)
         {
-            if (cell.size() > 1)
+            if (cell.size() <= 1)
+                continue;
+        
+            for (std::size_t i = 0; i < cell.size(); ++i)
             {
-                for (std::size_t i = 0; i < cell.size(); ++i)
+                for (std::size_t j = i + 1; j < cell.size(); ++j)
                 {
-                    for (std::size_t j = i + 1; j < cell.size(); ++j)
-                    {
-                        if (triangles_[cell[i]].CheckIntersection(triangles_[cell[j]]))
-                        {
-                            intersecting_triangles.insert (cell[i]);
-                            intersecting_triangles.insert (cell[j]);
-                        }
-                    }
+                    if (!triangles_[cell[i]].CheckIntersection(triangles_[cell[j]]))
+                        continue;
+
+                    intersecting_triangles.insert (cell[i]);
+                    intersecting_triangles.insert (cell[j]);
                 }
             }
+            
         }
         
         return intersecting_triangles;

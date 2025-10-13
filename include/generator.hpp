@@ -1,16 +1,14 @@
-#include <cassert>
-#include <iostream>
-#include <random>
-#include <fstream>
-#include <vector>
-
 #include <iostream>
 #include <fstream>
 #include <random>
 #include <string>
 
+namespace TrianglesGenerating
+{
+
 std::string GenerateRandomTriangles(std::size_t triangles_count, std::size_t Dim)
 {
+    assert (Dim == 2 || Dim == 3);
     std::string filename = "triangles_" + std::to_string(Dim) + "D_" + 
                           std::to_string(triangles_count) + ".dat";
     
@@ -20,7 +18,11 @@ std::string GenerateRandomTriangles(std::size_t triangles_count, std::size_t Dim
 
     std::mt19937 gen(42);
     std::uniform_real_distribution<double> main_dist(-100000, 100000);
-    std::uniform_real_distribution<double> offset_dist(-1000, 1000);
+    std::uniform_real_distribution<double> offset_dist;
+    if (Dim == 3)
+        offset_dist = std::uniform_real_distribution<double>(-1000, 1000);
+    if (Dim == 2)
+        offset_dist = std::uniform_real_distribution<double>(-100, 100);
     
     for (std::size_t i = 0; i < triangles_count; i++)
     {
@@ -61,3 +63,5 @@ std::string GenerateRandomTriangles(std::size_t triangles_count, std::size_t Dim
     outfile.close();
     return filename;
 }
+
+} // namespace TrianglesGenerating

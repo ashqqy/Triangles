@@ -1531,12 +1531,12 @@ TEST (triangles_intersection_2d, small_triangles)
 
 TEST(speed_test, 10000_triangles_2D)
 {
-    std::string filename = GenerateRandomTriangles(10000, 2);
+    std::string filename = TrianglesGenerating::GenerateRandomTriangles(10000, 2);
     
-    auto triangles = InputTriangles<double, 2>(filename);
+    auto triangles = Intersection::InputTriangles<double, 2>(filename);
     
     auto start_time = std::chrono::high_resolution_clock::now();
-    std::set<std::size_t> intersecting_triangles = FindIntersectingTriangles(triangles);
+    std::set<std::size_t> intersecting_triangles = Intersection::FindIntersectingTriangles(triangles);
     auto end_time = std::chrono::high_resolution_clock::now();
     
     auto duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
@@ -1552,12 +1552,12 @@ TEST(speed_test, 10000_triangles_2D)
 
 TEST(speed_test, 100000_triangles_2D)
 {
-    std::string filename = GenerateRandomTriangles(100000, 2);
+    std::string filename = TrianglesGenerating::GenerateRandomTriangles(100000, 2);
     
-    auto triangles = InputTriangles<double, 2>(filename);
+    auto triangles = Intersection::InputTriangles<double, 2>(filename);
     
     auto start_time = std::chrono::high_resolution_clock::now();
-    std::set<std::size_t> intersecting_triangles = FindIntersectingTriangles(triangles);
+    std::set<std::size_t> intersecting_triangles = Intersection::FindIntersectingTriangles(triangles);
     auto end_time = std::chrono::high_resolution_clock::now();
     
     auto duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
@@ -1573,12 +1573,12 @@ TEST(speed_test, 100000_triangles_2D)
 
 TEST(speed_test, 1000000_triangles_2D)
 {
-    std::string filename = GenerateRandomTriangles(1000000, 2);
+    std::string filename = TrianglesGenerating::GenerateRandomTriangles(1000000, 2);
     
-    auto triangles = InputTriangles<double, 2>(filename);
+    auto triangles = Intersection::InputTriangles<double, 2>(filename);
     
     auto start_time = std::chrono::high_resolution_clock::now();
-    std::set<std::size_t> intersecting_triangles = FindIntersectingTriangles(triangles);
+    std::set<std::size_t> intersecting_triangles = Intersection::FindIntersectingTriangles(triangles);
     auto end_time = std::chrono::high_resolution_clock::now();
     
     auto duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
@@ -1594,12 +1594,12 @@ TEST(speed_test, 1000000_triangles_2D)
 
 TEST(speed_test, 10000_triangles_3D)
 {
-    std::string filename = GenerateRandomTriangles(10000, 3);
+    std::string filename = TrianglesGenerating::GenerateRandomTriangles(10000, 3);
     
-    auto triangles = InputTriangles<double, 3>(filename);
+    auto triangles = Intersection::InputTriangles<double, 3>(filename);
     
     auto start_time = std::chrono::high_resolution_clock::now();
-    std::set<std::size_t> intersecting_triangles = FindIntersectingTriangles(triangles);
+    std::set<std::size_t> intersecting_triangles = Intersection::FindIntersectingTriangles(triangles);
     auto end_time = std::chrono::high_resolution_clock::now();
     
     auto duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
@@ -1615,12 +1615,12 @@ TEST(speed_test, 10000_triangles_3D)
 
 TEST(speed_test, 100000_triangles_3D)
 {
-    std::string filename = GenerateRandomTriangles(100000, 3);
+    std::string filename = TrianglesGenerating::GenerateRandomTriangles(100000, 3);
     
-    auto triangles = InputTriangles<double, 3>(filename);
+    auto triangles = Intersection::InputTriangles<double, 3>(filename);
     
     auto start_time = std::chrono::high_resolution_clock::now();
-    std::set<std::size_t> intersecting_triangles = FindIntersectingTriangles(triangles);
+    std::set<std::size_t> intersecting_triangles = Intersection::FindIntersectingTriangles(triangles);
     auto end_time = std::chrono::high_resolution_clock::now();
     
     auto duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
@@ -1636,12 +1636,12 @@ TEST(speed_test, 100000_triangles_3D)
 
 TEST(speed_test, 1000000_triangles_3D)
 {
-    std::string filename = GenerateRandomTriangles(1000000, 3);
+    std::string filename = TrianglesGenerating::GenerateRandomTriangles(1000000, 3);
     
-    auto triangles = InputTriangles<double, 3>(filename);
+    auto triangles = Intersection::InputTriangles<double, 3>(filename);
     
     auto start_time = std::chrono::high_resolution_clock::now();
-    std::set<std::size_t> intersecting_triangles = FindIntersectingTriangles(triangles);
+    std::set<std::size_t> intersecting_triangles = Intersection::FindIntersectingTriangles(triangles);
     auto end_time = std::chrono::high_resolution_clock::now();
     
     auto duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);

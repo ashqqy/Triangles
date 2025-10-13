@@ -9,6 +9,9 @@
 
 #include "common.hpp"
 
+namespace Geometry
+{
+
 // --------------------------------------------- Concepts --------------------------------------------
 
 template<std::size_t Dim>
@@ -16,12 +19,6 @@ concept VectorValidDimension = (1 <= Dim && Dim <= 3);
 
 template<std::size_t Dim>
 concept TriangleValidDimension = (Dim == 2 || Dim == 3);
-
-// ---------------------------------------------------------------------------------------------------
-
-
-namespace Geometry
-{
 
 // --------------------------------------------- Vector ----------------------------------------------
 
@@ -47,42 +44,69 @@ struct Vector
     }
     Vector(const Vector<T, Dim>& begin, const Vector<T, Dim>& end) : Vector(end - begin) {}
 
+    Vector& operator+=(const Vector& other)
+    {
+        for (std::size_t i = 0; i < Dim; ++i)
+        {
+            coords[i] += other.coords[i];
+        }
+        return *this;
+    }
+
+    Vector& operator-=(const Vector& other)
+    {
+        for (std::size_t i = 0; i < Dim; ++i)
+        {
+            coords[i] -= other.coords[i];
+        }
+        return *this;
+    }
+
+    Vector& operator/=(T scalar)
+    {
+        assert(!FloatingPointE(scalar, T{0}) && "Division by zero");
+        
+        for (std::size_t i = 0; i < Dim; ++i)
+        {
+            coords[i] /= scalar;
+        }
+        return *this;
+    }
+
+    Vector& operator*=(T scalar)
+    {
+        for (std::size_t i = 0; i < Dim; ++i)
+        {
+            coords[i] *= scalar;
+        }
+        return *this;
+    }
+
     Vector operator+(const Vector& other) const
     {
-        Vector result;
-        for (std::size_t i = 0 ; i < Dim; ++i)
-        {
-            result.coords[i] = coords[i] + other.coords[i];
-        }
+        Vector result = *this;
+        result += other;
         return result;
     }
 
     Vector operator-(const Vector& other) const
     {
-        Vector result;
-        for (std::size_t i = 0 ; i < Dim; ++i)
-            result.coords[i] = coords[i] - other.coords[i];
-
-        return result;
-    }
-
-    Vector operator/(T scalar) const
-    {
-        assert(!FloatingPointE(scalar, T{0}) && "Division by zero");
-
-        Vector result;
-        for (std::size_t i = 0 ; i < Dim; ++i)
-            result.coords[i] = coords[i] / scalar;
-
+        Vector result = *this;
+        result -= other;
         return result;
     }
 
     Vector operator*(T scalar) const
     {
-        Vector result;
-        for (std::size_t i = 0 ; i < Dim; ++i)
-            result.coords[i] = coords[i] * scalar;
+        Vector result = *this;
+        result *= scalar;
+        return result;
+    }
 
+    Vector operator/(T scalar) const
+    {
+        Vector result = *this;
+        result /= scalar;
         return result;
     }
 
@@ -108,27 +132,6 @@ struct Vector
         return coords[index];
     }
 
-    friend std::istream& operator>>(std::istream& is, Vector<T, Dim>& vec)
-    {
-        for (std::size_t i = 0; i < Dim; ++i)
-            if (!(is >> vec[i]))
-                break;
-
-        return is;
-    }
-
-    friend std::ostream& operator<<(std::ostream& os, Vector<T, Dim>& vec)
-    {
-        std::cout << "(";
-        for (std::size_t i = 0; i < Dim - 1; ++i)
-        {
-            std::cout << vec[i] << ", ";
-        }
-        std::cout << vec[Dim - 1] << ")";
-
-        return os;
-    }
-
     T GetX() const
     {
         return (*this)[0];
@@ -136,16 +139,14 @@ struct Vector
 
     T GetY() const
     {
-        if constexpr (Dim == 1)
-            return T{0};
+        assert(Dim > 1 && "Dimension must be greater than 1 to access Y component");
 
         return (*this)[1];
     }
 
     T GetZ() const
     {
-        if constexpr (Dim == 1 || Dim == 2)
-            return T{0};
+        assert(Dim > 2 && "Dimension must be greater than 2 to access Z component");
 
         return (*this)[2];
     }
@@ -207,6 +208,33 @@ struct Vector
         return DotProduct(*this);
     }
 };
+
+template<FloatingPoint T, std::size_t Dim>
+requires VectorValidDimension<Dim>
+
+std::istream& operator>>(std::istream& is, Vector<T, Dim>& vec)
+{
+    for (std::size_t i = 0; i < Dim; ++i)
+        if (!(is >> vec[i]))
+            break;
+
+    return is;
+}
+
+template<FloatingPoint T, std::size_t Dim>
+requires VectorValidDimension<Dim>
+
+std::ostream& operator<<(std::ostream& os, Vector<T, Dim>& vec)
+{
+    os << "(";
+    for (std::size_t i = 0; i < Dim - 1; ++i)
+    {
+        os << vec[i] << ", ";
+    }
+    os << vec[Dim - 1] << ")";
+
+    return os;
+}
 
 // ------------------------------------------ Line segment -------------------------------------------
 

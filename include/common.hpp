@@ -6,7 +6,7 @@
 template<typename T>
 concept FloatingPoint = std::floating_point<T>;
 
-// ---------------------------------------- Double comparsion ----------------------------------------
+// ------------------------------------ Floating point comparsion ------------------------------------
 
 template<FloatingPoint T>
 inline bool FloatingPointLE(T left, T right, T epsilon = std::numeric_limits<T>::epsilon())
