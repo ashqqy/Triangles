@@ -1064,9 +1064,9 @@ TEST (triangle_segment_check_intersection, 3d_tilted_plane)
     GTEST_EXPECT_FALSE(triangle_d.CheckIntersection(segment_parallel_d));
 }
 
-// // -----------------------------------------------------------------------------
-// // --------------------------- Whole algorithm tests ---------------------------
-// // -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+// ----------------------- Triangles intersection tests ------------------------
+// -----------------------------------------------------------------------------
 
 TEST (triangles_intersection, basic_no_intersection_parallel_planes)
 {
@@ -1518,3 +1518,19 @@ TEST (triangles_intersection_2d, small_triangles)
     Triangle<float, 2> second_f({0.5e-3f, 0.5e-3f}, {1.5e-3f, 0.5e-3f}, {0.5e-3f, 1.5e-3f});
     GTEST_EXPECT_TRUE (first_f.CheckIntersection(second_f));
 }
+
+// -----------------------------------------------------------------------------
+// ------------------------ Whole algorithm speed tests ------------------------
+// -----------------------------------------------------------------------------
+
+// std::system("hyperfine './build/Geometry < tests/data/1000000_3.dat'");
+
+// TEST (speed_test, 100000_triangles_3_dim)
+// {
+//     std::system("hyperfine './build/Geometry < tests/data/100000_3.dat'");
+// }
+
+// TEST (speed_test, 1000000_triangles_3_dim)
+// {
+//     std::system("hyperfine './build/Geometry < tests/data/1000000_3.dat'");
+// }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <set>
 
 #include "common.hpp"
 #include "geometry.hpp"
@@ -47,12 +48,9 @@ struct UniformGrid
         }
     }
 
-    using CollisionPair = std::pair<std::size_t, std::size_t>;
-    using CollisionCandidates = std::vector<CollisionPair>;
-
-    CollisionCandidates FindPotentialIntersections() const
+    std::set<std::size_t> FindIntersectingTriangles() const
     {
-        CollisionCandidates potential_pairs;
+        std::set<std::size_t> intersecting_triangles;
         
         for (const auto& cell : cells_)
         {
@@ -62,18 +60,17 @@ struct UniformGrid
                 {
                     for (std::size_t j = i + 1; j < cell.size(); ++j)
                     {
-                        potential_pairs.emplace_back(std::min(cell[i], cell[j]), std::max(cell[i], cell[j]));
+                        if (triangles_[cell[i]].CheckIntersection(triangles_[cell[j]]))
+                        {
+                            intersecting_triangles.insert (cell[i]);
+                            intersecting_triangles.insert (cell[j]);
+                        }
                     }
                 }
             }
         }
         
-        // Delete duplicates
-        std::sort(potential_pairs.begin(), potential_pairs.end());
-        CollisionCandidates::iterator duplicates_begin = std::unique(potential_pairs.begin(), potential_pairs.end());
-        potential_pairs.erase(duplicates_begin, potential_pairs.end());
-        
-        return potential_pairs;
+        return intersecting_triangles;
     }
 
   private:

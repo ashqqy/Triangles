@@ -5,45 +5,77 @@
 #include "geometry.hpp"
 #include "uniform_grid.hpp"
 
-int main ()
+template<FloatingPoint T, std::size_t Dim>
+requires TriangleValidDimension<Dim>
+
+std::set<std::size_t> FindIntersectingTriangles(std::vector<Geometry::Triangle<T, Dim>> triangles)
+{
+    UniformGrid<T, Dim> grid (triangles);
+    return grid.FindIntersectingTriangles();
+}
+
+template<FloatingPoint T, std::size_t Dim>
+requires TriangleValidDimension<Dim>
+
+std::set<std::size_t> FindIntersectingTrianglesNaive(std::vector<Geometry::Triangle<T, Dim>> triangles)
+{
+    std::set<std::size_t> intersecting_triangles;
+
+    for (std::size_t i = 0; i < triangles.size(); ++i)
+    {
+        for (std::size_t j = i + 1; j < triangles.size(); ++j)
+        {
+            if (triangles[i].CheckIntersection(triangles[j]))
+            {
+                intersecting_triangles.insert(i);
+                intersecting_triangles.insert(j);
+            }
+        }
+    }
+
+    return intersecting_triangles;
+}
+
+template<FloatingPoint T, std::size_t Dim>
+requires TriangleValidDimension<Dim>
+
+std::vector<Geometry::Triangle<T, Dim>> InputTriangles()
 {
     std::size_t triangles_count = 0;
     std::cin >> triangles_count;
-    if (!(0 < triangles_count && triangles_count < 1000000))
+    if (!(0 <= triangles_count && triangles_count <= 1000000))
     {
         std::cerr << "Wrong number of triangles (0 < triangles count < 1000000)" << std::endl;
-        return 1;
+        return {};
     }
 
-    std::vector<Geometry::Triangle<double, 3>> triangles;
+    std::vector<Geometry::Triangle<T, Dim>> triangles;
     triangles.reserve(triangles_count);
 
-    for (std::size_t i = 0; i < triangles_count; ++i)
+    for (std::size_t triangle_idx = 0; triangle_idx < triangles_count; ++triangle_idx)
     {
-        Geometry::Vector<double, 3> A;
-        Geometry::Vector<double, 3> B;
-        Geometry::Vector<double, 3> C;
+        Geometry::Vector<T, Dim> A;
+        Geometry::Vector<T, Dim> B;
+        Geometry::Vector<T, Dim> C;
 
         std::cin >> A >> B >> C;
         
         triangles.emplace_back(A, B, C);
     }
 
-    UniformGrid<double, 3> grid (triangles);
-    std::vector<std::pair<std::size_t, std::size_t>> potential_intersections = grid.FindPotentialIntersections();
-    std::set<std::size_t> intersecting_triangles;
+    return triangles;
+}
 
-    for (auto& [first_idx, second_idx]: potential_intersections)
-    {
-        if (triangles[first_idx].CheckIntersection(triangles[second_idx]))
-        {
-            intersecting_triangles.insert (first_idx);
-            intersecting_triangles.insert (second_idx);
-        }
-    }
+int main ()
+{
+    auto triangles = InputTriangles<double, 3>();
+
+    std::set<std::size_t> intersecting_triangles = FindIntersectingTriangles(triangles);
 
     for (auto i: intersecting_triangles)
     {
         std::cout << i << std::endl;
     }
+
+    std::cout << intersecting_triangles.size() << std::endl;
 }
