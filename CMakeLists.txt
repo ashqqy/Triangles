@@ -5,7 +5,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 project (Geometry)
 set(CMAKE_CXX_FLAGS "-O3")
 add_subdirectory(tests)
-add_subdirectory(generate)
 
 set(SOURCE_FILES
 src/main.cpp

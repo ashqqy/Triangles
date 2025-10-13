@@ -1,6 +1,10 @@
 #include <gtest/gtest.h>
 
-#include "geometry.hpp"
+#include <string>
+#include <filesystem>
+
+#include "generator.hpp"
+#include "triangles_intersection.hpp"
 
 int main(int argc, char **argv)
 {
@@ -1525,12 +1529,128 @@ TEST (triangles_intersection_2d, small_triangles)
 
 // std::system("hyperfine './build/Geometry < tests/data/1000000_3.dat'");
 
-// TEST (speed_test, 100000_triangles_3_dim)
-// {
-//     std::system("hyperfine './build/Geometry < tests/data/100000_3.dat'");
-// }
+TEST(speed_test, 10000_triangles_2D)
+{
+    std::string filename = GenerateRandomTriangles(10000, 2);
+    
+    auto triangles = InputTriangles<double, 2>(filename);
+    
+    auto start_time = std::chrono::high_resolution_clock::now();
+    std::set<std::size_t> intersecting_triangles = FindIntersectingTriangles(triangles);
+    auto end_time = std::chrono::high_resolution_clock::now();
+    
+    auto duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
+    auto duration_sec = std::chrono::duration_cast<std::chrono::seconds>(end_time - start_time);
 
-// TEST (speed_test, 1000000_triangles_3_dim)
-// {
-//     std::system("hyperfine './build/Geometry < tests/data/1000000_3.dat'");
-// }
+    std::cout << "Performance results:" << std::endl;
+    std::cout << "Execution time: " << duration_sec.count() << " s (" << duration_ms.count() << " ms)" << std::endl;
+    std::cout << "Triangles processed: " << triangles.size() << std::endl;
+    std::cout << "Intersections found: " << intersecting_triangles.size() << std::endl;
+
+    std::filesystem::remove(filename);
+}
+
+TEST(speed_test, 100000_triangles_2D)
+{
+    std::string filename = GenerateRandomTriangles(100000, 2);
+    
+    auto triangles = InputTriangles<double, 2>(filename);
+    
+    auto start_time = std::chrono::high_resolution_clock::now();
+    std::set<std::size_t> intersecting_triangles = FindIntersectingTriangles(triangles);
+    auto end_time = std::chrono::high_resolution_clock::now();
+    
+    auto duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
+    auto duration_sec = std::chrono::duration_cast<std::chrono::seconds>(end_time - start_time);
+
+    std::cout << "Performance results:" << std::endl;
+    std::cout << "Execution time: " << duration_sec.count() << " s (" << duration_ms.count() << " ms)" << std::endl;
+    std::cout << "Triangles processed: " << triangles.size() << std::endl;
+    std::cout << "Intersections found: " << intersecting_triangles.size() << std::endl;
+
+    std::filesystem::remove(filename);
+}
+
+TEST(speed_test, 1000000_triangles_2D)
+{
+    std::string filename = GenerateRandomTriangles(1000000, 2);
+    
+    auto triangles = InputTriangles<double, 2>(filename);
+    
+    auto start_time = std::chrono::high_resolution_clock::now();
+    std::set<std::size_t> intersecting_triangles = FindIntersectingTriangles(triangles);
+    auto end_time = std::chrono::high_resolution_clock::now();
+    
+    auto duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
+    auto duration_sec = std::chrono::duration_cast<std::chrono::seconds>(end_time - start_time);
+
+    std::cout << "Performance results:" << std::endl;
+    std::cout << "Execution time: " << duration_sec.count() << " s (" << duration_ms.count() << " ms)" << std::endl;
+    std::cout << "Triangles processed: " << triangles.size() << std::endl;
+    std::cout << "Intersections found: " << intersecting_triangles.size() << std::endl;
+
+    std::filesystem::remove(filename);
+}
+
+TEST(speed_test, 10000_triangles_3D)
+{
+    std::string filename = GenerateRandomTriangles(10000, 3);
+    
+    auto triangles = InputTriangles<double, 3>(filename);
+    
+    auto start_time = std::chrono::high_resolution_clock::now();
+    std::set<std::size_t> intersecting_triangles = FindIntersectingTriangles(triangles);
+    auto end_time = std::chrono::high_resolution_clock::now();
+    
+    auto duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
+    auto duration_sec = std::chrono::duration_cast<std::chrono::seconds>(end_time - start_time);
+
+    std::cout << "Performance results:" << std::endl;
+    std::cout << "Execution time: " << duration_sec.count() << " s (" << duration_ms.count() << " ms)" << std::endl;
+    std::cout << "Triangles processed: " << triangles.size() << std::endl;
+    std::cout << "Intersections found: " << intersecting_triangles.size() << std::endl;
+
+    std::filesystem::remove(filename);
+}
+
+TEST(speed_test, 100000_triangles_3D)
+{
+    std::string filename = GenerateRandomTriangles(100000, 3);
+    
+    auto triangles = InputTriangles<double, 3>(filename);
+    
+    auto start_time = std::chrono::high_resolution_clock::now();
+    std::set<std::size_t> intersecting_triangles = FindIntersectingTriangles(triangles);
+    auto end_time = std::chrono::high_resolution_clock::now();
+    
+    auto duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
+    auto duration_sec = std::chrono::duration_cast<std::chrono::seconds>(end_time - start_time);
+
+    std::cout << "Performance results:" << std::endl;
+    std::cout << "Execution time: " << duration_sec.count() << " s (" << duration_ms.count() << " ms)" << std::endl;
+    std::cout << "Triangles processed: " << triangles.size() << std::endl;
+    std::cout << "Intersections found: " << intersecting_triangles.size() << std::endl;
+
+    std::filesystem::remove(filename);
+}
+
+TEST(speed_test, 1000000_triangles_3D)
+{
+    std::string filename = GenerateRandomTriangles(1000000, 3);
+    
+    auto triangles = InputTriangles<double, 3>(filename);
+    
+    auto start_time = std::chrono::high_resolution_clock::now();
+    std::set<std::size_t> intersecting_triangles = FindIntersectingTriangles(triangles);
+    auto end_time = std::chrono::high_resolution_clock::now();
+    
+    auto duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
+    auto duration_sec = std::chrono::duration_cast<std::chrono::seconds>(end_time - start_time);
+
+    std::cout << "Performance results:" << std::endl;
+    std::cout << "Execution time: " << duration_sec.count() << " s (" << duration_ms.count() << " ms)" << std::endl;
+    std::cout << "Triangles processed: " << triangles.size() << std::endl;
+    std::cout << "Intersections found: " << intersecting_triangles.size() << std::endl;
+
+    std::filesystem::remove(filename);
+}
