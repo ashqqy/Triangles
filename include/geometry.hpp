@@ -7,12 +7,9 @@
 #include <utility>
 #include <iostream>
 
-namespace Triangles
-{
-// --------------------------------------------- Concepts --------------------------------------------
+#include "common.hpp"
 
-template<typename T>
-concept FloatingPoint = std::floating_point<T>;
+// --------------------------------------------- Concepts --------------------------------------------
 
 template<std::size_t Dim>
 concept VectorValidDimension = (1 <= Dim && Dim <= 3);
@@ -20,42 +17,11 @@ concept VectorValidDimension = (1 <= Dim && Dim <= 3);
 template<std::size_t Dim>
 concept TriangleValidDimension = (Dim == 2 || Dim == 3);
 
-// ---------------------------------------- Double comparsion ----------------------------------------
+// ---------------------------------------------------------------------------------------------------
 
-template<FloatingPoint T>
-inline bool FloatingPointLE(T left, T right, T epsilon = std::numeric_limits<T>::epsilon())
-{
-    T max_val = std::max({std::abs(left), std::abs(right), T(1.0)});
-    return left < right + epsilon * max_val;
-}
 
-template<FloatingPoint T>
-inline bool FloatingPointL(T left, T right, T epsilon = std::numeric_limits<T>::epsilon())
+namespace Geometry
 {
-    T max_val = std::max({std::abs(left), std::abs(right), T(1.0)});
-    return left < right - epsilon * max_val;
-}
-
-template<FloatingPoint T>
-inline bool FloatingPointGE(T left, T right, T epsilon = std::numeric_limits<T>::epsilon())
-{
-    T max_val = std::max({std::abs(left), std::abs(right), T(1.0)});
-    return left > right - epsilon * max_val;
-}
-
-template<FloatingPoint T>
-inline bool FloatingPointG(T left, T right, T epsilon = std::numeric_limits<T>::epsilon())
-{
-    T max_val = std::max({std::abs(left), std::abs(right), T(1.0)});
-    return left > right + epsilon * max_val;
-}
-
-template<FloatingPoint T>
-inline bool FloatingPointE(T a, T b, T epsilon = std::numeric_limits<T>::epsilon())
-{
-    T max_val = std::max({std::abs(a), std::abs(b), T(1.0)});
-    return std::abs(a - b) < epsilon * max_val;
-}
 
 // --------------------------------------------- Vector ----------------------------------------------
 
@@ -161,6 +127,27 @@ struct Vector
         std::cout << vec[Dim - 1] << ")";
 
         return os;
+    }
+
+    T GetX() const
+    {
+        return (*this)[0];
+    }
+
+    T GetY() const
+    {
+        if constexpr (Dim == 1)
+            return T{0};
+
+        return (*this)[1];
+    }
+
+    T GetZ() const
+    {
+        if constexpr (Dim == 1 || Dim == 2)
+            return T{0};
+
+        return (*this)[2];
     }
 
     T DotProduct(const Vector<T, Dim>& other) const
@@ -382,6 +369,7 @@ struct LineSegment
 };
 
 template<FloatingPoint T>
+
 struct LineSegment<T, 1>
 {
     T begin{};
@@ -393,7 +381,7 @@ struct LineSegment<T, 1>
 
     T Length() const
     {
-        return std::abs(end - begin);
+        return std::fabs(end - begin);
     }
     
     bool ContainsPoint(const Vector<T, 1>& point) const
@@ -461,6 +449,7 @@ enum class TrianglePlaneIntersection
 };
 
 template<FloatingPoint T>
+
 struct TrianglePlaneDistances
 {
     T d_a;
@@ -475,6 +464,7 @@ struct TrianglePlaneDistances
 
 template<FloatingPoint T, std::size_t Dim>
 requires TriangleValidDimension<Dim>
+
 struct Triangle
 {
     Vector<T, Dim> a;

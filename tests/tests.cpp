@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "triangles.hpp"
+#include "geometry.hpp"
 
 int main(int argc, char **argv)
 {
@@ -17,7 +17,7 @@ int main(int argc, char **argv)
 // ---------------------------- Vectors dot product ----------------------------
 // -----------------------------------------------------------------------------
 
-using namespace Triangles;
+using namespace Geometry;
 
 TEST (vector_dot_product, basic)
 {

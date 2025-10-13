@@ -2,7 +2,8 @@
 #include <set>
 #include <vector>
 
-#include "triangles.hpp"
+#include "geometry.hpp"
+#include "uniform_grid.hpp"
 
 int main ()
 {
@@ -14,31 +15,30 @@ int main ()
         return 1;
     }
 
-    std::vector<Triangles::Triangle<double, 3>> triangles;
+    std::vector<Geometry::Triangle<double, 3>> triangles;
     triangles.reserve(triangles_count);
 
     for (std::size_t i = 0; i < triangles_count; ++i)
     {
-        Triangles::Vector<double, 3> A;
-        Triangles::Vector<double, 3> B;
-        Triangles::Vector<double, 3> C;
+        Geometry::Vector<double, 3> A;
+        Geometry::Vector<double, 3> B;
+        Geometry::Vector<double, 3> C;
 
         std::cin >> A >> B >> C;
         
         triangles.emplace_back(A, B, C);
     }
 
+    UniformGrid<double, 3> grid (triangles);
+    std::vector<std::pair<std::size_t, std::size_t>> potential_intersections = grid.FindPotentialIntersections();
     std::set<std::size_t> intersecting_triangles;
 
-    for (std::size_t i = 0; i < triangles_count; ++i)
+    for (auto& [first_idx, second_idx]: potential_intersections)
     {
-        for (std::size_t j = i + 1; j < triangles_count; ++j)
+        if (triangles[first_idx].CheckIntersection(triangles[second_idx]))
         {
-            if (triangles[i].CheckIntersection(triangles[j]))
-            {
-                intersecting_triangles.insert (i);
-                intersecting_triangles.insert (j);
-            }
+            intersecting_triangles.insert (first_idx);
+            intersecting_triangles.insert (second_idx);
         }
     }
 
